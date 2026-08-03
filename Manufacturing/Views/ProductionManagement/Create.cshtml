@@ -1,0 +1,162 @@
+@model Manufacturing.Models.ProductionOrder
+@using Microsoft.AspNetCore.Http
+@inject IHttpContextAccessor HttpContextAccessor
+
+@{
+    ViewData["Title"] = "Create Production Order";
+    var sessionName = HttpContextAccessor.HttpContext?.Session.GetString("FullName") 
+                   ?? HttpContextAccessor.HttpContext?.Session.GetString("Username") 
+                   ?? "Admin";
+}
+
+<div class="container-fluid px-3 py-3">
+    <!-- Header Banner -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 p-4 rounded-4 shadow-sm text-white" style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);">
+        <div class="mb-3 mb-md-0">
+            <h2 class="fw-bold mb-1 d-flex align-items-center">
+                <i class="bi bi-plus-circle text-primary me-2 fs-2"></i> Create Production Order
+            </h2>
+            <p class="text-slate-300 mb-0 opacity-75">Admin Operations: Add a new manufacturing order to the system queue</p>
+        </div>
+        <div>
+            <a asp-action="Index" class="btn btn-outline-light rounded-pill px-4 py-2">
+                <i class="bi bi-arrow-left me-1"></i> Back to Orders List
+            </a>
+        </div>
+    </div>
+
+    <!-- Main Create Form Card -->
+    <div class="row justify-content-center">
+        <div class="col-lg-10 col-xl-8">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                <div class="card-header bg-white border-0 pt-4 px-4 pb-0">
+                    <h5 class="fw-bold text-dark mb-0">
+                        <i class="bi bi-card-checklist me-2 text-primary"></i>Production Order Details
+                    </h5>
+                    <p class="text-muted small">Fill out the production specifications and schedule below.</p>
+                </div>
+                <div class="card-body p-4">
+                    <form asp-action="Create" method="post">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger rounded-3" role="alert"></div>
+
+                        <div class="row g-3">
+                            <!-- Order Number -->
+                            <div class="col-md-6">
+                                <label asp-for="OrderNo" class="form-label fw-semibold text-dark">Order Number <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-end-0"><i class="bi bi-hash text-primary"></i></span>
+                                    <input asp-for="OrderNo" class="form-for-control form-control border-start-0 ps-0" placeholder="e.g. PO-2026-001" required />
+                                </div>
+                                <span asp-validation-for="OrderNo" class="text-danger small"></span>
+                            </div>
+
+                            <!-- Product Name -->
+                            <div class="col-md-6">
+                                <label asp-for="ProductName" class="form-label fw-semibold text-dark">Product Name <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-end-0"><i class="bi bi-box-seam text-primary"></i></span>
+                                    <input asp-for="ProductName" class="form-control border-start-0 ps-0" placeholder="e.g. Hydraulic Cylinder Assembly" required />
+                                </div>
+                                <span asp-validation-for="ProductName" class="text-danger small"></span>
+                            </div>
+
+                            <!-- Quantity -->
+                            <div class="col-md-6">
+                                <label asp-for="Quantity" class="form-label fw-semibold text-dark">Quantity <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-end-0"><i class="bi bi-123 text-primary"></i></span>
+                                    <input asp-for="Quantity" type="number" min="1" class="form-control border-start-0 ps-0" placeholder="e.g. 500" required />
+                                </div>
+                                <span asp-validation-for="Quantity" class="text-danger small"></span>
+                            </div>
+
+                            <!-- Unit -->
+                            <div class="col-md-6">
+                                <label asp-for="Unit" class="form-label fw-semibold text-dark">Unit of Measurement</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-end-0"><i class="bi bi-rulers text-primary"></i></span>
+                                    <select asp-for="Unit" class="form-select border-start-0 ps-0">
+                                        <option value="Units">Units</option>
+                                        <option value="Pcs">Pcs (Pieces)</option>
+                                        <option value="Kg">Kg (Kilograms)</option>
+                                        <option value="Meters">Meters</option>
+                                        <option value="Sets">Sets</option>
+                                        <option value="Boxes">Boxes</option>
+                                        <option value="Liters">Liters</option>
+                                    </select>
+                                </div>
+                                <span asp-validation-for="Unit" class="text-danger small"></span>
+                            </div>
+
+                            <!-- Start Date -->
+                            <div class="col-md-6">
+                                <label asp-for="StartDate" class="form-label fw-semibold text-dark">Start Date</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-end-0"><i class="bi bi-calendar-event text-primary"></i></span>
+                                    <input asp-for="StartDate" type="date" class="form-control border-start-0 ps-0" />
+                                </div>
+                                <span asp-validation-for="StartDate" class="text-danger small"></span>
+                            </div>
+
+                            <!-- End Date -->
+                            <div class="col-md-6">
+                                <label asp-for="EndDate" class="form-label fw-semibold text-dark">Expected End Date</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-end-0"><i class="bi bi-calendar-check text-success"></i></span>
+                                    <input asp-for="EndDate" type="date" class="form-control border-start-0 ps-0" />
+                                </div>
+                                <span asp-validation-for="EndDate" class="text-danger small"></span>
+                            </div>
+
+                            <!-- Priority -->
+                            <div class="col-md-6">
+                                <label asp-for="Priority" class="form-label fw-semibold text-dark">Order Priority</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-end-0"><i class="bi bi-exclamation-triangle text-warning"></i></span>
+                                    <select asp-for="Priority" class="form-select border-start-0 ps-0">
+                                        <option value="Medium">Medium</option>
+                                        <option value="Low">Low</option>
+                                        <option value="High">High</option>
+                                        <option value="Critical">Critical</option>
+                                    </select>
+                                </div>
+                                <span asp-validation-for="Priority" class="text-danger small"></span>
+                            </div>
+
+                            <!-- Created By (Pre-filled with session user) -->
+                            <div class="col-md-6">
+                                <label asp-for="CreatedBy" class="form-label fw-semibold text-dark">Created By</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-end-0"><i class="bi bi-person-badge text-primary"></i></span>
+                                    <input asp-for="CreatedBy" class="form-control border-start-0 ps-0" value="@sessionName" placeholder="Creator Name" />
+                                </div>
+                                <span asp-validation-for="CreatedBy" class="text-danger small"></span>
+                            </div>
+
+                            <!-- Remarks -->
+                            <div class="col-12">
+                                <label asp-for="Remarks" class="form-label fw-semibold text-dark">Remarks / Special Instructions</label>
+                                <textarea asp-for="Remarks" class="form-control" rows="3" placeholder="Add optional remarks, material specifications, or instructions..."></textarea>
+                                <span asp-validation-for="Remarks" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <hr class="my-4" />
+
+                        <!-- Form Submission Actions -->
+                        <div class="d-flex justify-content-end gap-2">
+                            <a asp-action="Index" class="btn btn-light rounded-pill px-4 fw-semibold border">Cancel</a>
+                            <button type="submit" class="btn btn-primary rounded-pill px-5 fw-semibold shadow-sm">
+                                <i class="bi bi-check-circle-fill me-1"></i> Submit Production Order
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,0 +1,128 @@
+@model List<Manufacturing.Models.User>
+
+@{
+    ViewData["Title"] = "User Management";
+
+    string getRoleBadgeClass(string role)
+    {
+        switch (role)
+        {
+            case "Admin": return "bg-danger text-white";
+            case "Production Manager": return "bg-primary text-white";
+            case "Inventory Manager": return "bg-warning text-dark";
+            case "Machine Supervisor": return "bg-info text-dark";
+            case "Shift Supervisor": return "bg-secondary text-white";
+            case "Machine Operator": return "bg-dark text-white";
+            case "Quality Inspector": return "bg-success text-white";
+            case "Store Manager": return "bg-indigo text-white";
+            default: return "bg-secondary text-white";
+        }
+    }
+}
+
+<div class="container-fluid px-3 py-3">
+    <div class="d-flex justify-content-between align-items-center mb-4 p-4 rounded-4 shadow-sm text-white" style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);">
+        <div>
+            <h2 class="fw-bold mb-1"><i class="bi bi-people-fill text-primary me-2"></i>User Management</h2>
+            <p class="text-slate-300 mb-0 opacity-75">Admin Control Panel: Manage accounts, update roles, and switch access status</p>
+        </div>
+        <div>
+            <a asp-action="Create" class="btn btn-primary rounded-pill px-4 py-2 shadow-sm fw-semibold">
+                <i class="bi bi-person-plus-fill me-1"></i> Add New User
+            </a>
+            <a asp-controller="Account" asp-action="Dashboard" class="btn btn-outline-light rounded-pill px-3 py-2 ms-2">
+                <i class="bi bi-speedometer2 me-1"></i> Dashboard
+            </a>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
+            <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-table me-2 text-primary"></i>All Users Directory</h5>
+            <span class="badge bg-primary bg-opacity-10 text-primary border border-primary px-3 py-2 rounded-pill fw-semibold">
+                Total Users: @(Model != null ? Model.Count : 0)
+            </span>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th class="ps-4">ID</th>
+                            <th>Full Name</th>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th>Mobile</th>
+                            <th>Role</th>
+                            <th class="text-center">Status</th>
+                            <th class="text-end pe-4">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null && Model.Count > 0)
+                        {
+                            @foreach (var u in Model)
+                            {
+                                <tr>
+                                    <td class="ps-4 fw-bold text-muted">#@u.UserId</td>
+                                    <td class="fw-semibold text-dark">
+                                        <div class="d-flex align-items-center">
+                                            <div class="rounded-circle bg-light text-primary border d-flex align-items-center justify-content-center me-2" style="width: 36px; height: 36px;">
+                                                <i class="bi bi-person-fill"></i>
+                                            </div>
+                                            <span>@u.FullName</span>
+                                        </div>
+                                    </td>
+                                    <td><code>@u.Username</code></td>
+                                    <td>@(string.IsNullOrEmpty(u.Email) ? "-" : u.Email)</td>
+                                    <td>@(string.IsNullOrEmpty(u.Mobile) ? "-" : u.Mobile)</td>
+                                    <td>
+                                        <span class="badge @getRoleBadgeClass(u.Role) rounded-pill px-3 py-1 fw-medium">
+                                            @u.Role
+                                        </span>
+                                    </td>
+                                    <td class="text-center">
+                                        @if (u.IsActive)
+                                        {
+                                            <span class="badge bg-success bg-opacity-10 text-success border border-success rounded-pill px-3 py-1">Active</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger bg-opacity-10 text-danger border border-danger rounded-pill px-3 py-1">Inactive</span>
+                                        }
+                                    </td>
+                                    <td class="text-end pe-4">
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <a asp-action="Edit" asp-route-id="@u.UserId" class="btn btn-outline-primary" title="Edit User">
+                                                <i class="bi bi-pencil-square"></i> Edit
+                                            </a>
+                                            <a asp-action="ChangeStatus" asp-route-id="@u.UserId" class="btn btn-outline-warning" title="Toggle Active Status">
+                                                <i class="bi bi-arrow-repeat"></i> Toggle Status
+                                            </a>
+                                            <a asp-action="Delete" asp-route-id="@u.UserId" class="btn btn-outline-danger" title="Delete User" onclick="return confirm('Are you sure you want to delete user @u.FullName?');">
+                                                <i class="bi bi-trash-fill"></i> Delete
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="8" class="text-center py-5 text-muted">
+                                    <i class="bi bi-inbox fs-1 d-block mb-2 text-secondary opacity-50"></i>
+                                    <h5>No users found</h5>
+                                    <p class="mb-3">Click the button below to add your first user.</p>
+                                    <a asp-action="Create" class="btn btn-primary rounded-pill px-4">
+                                        <i class="bi bi-person-plus-fill me-1"></i> Add New User
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

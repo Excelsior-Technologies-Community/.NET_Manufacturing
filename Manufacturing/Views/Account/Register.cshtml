@@ -1,0 +1,98 @@
+@model Manufacturing.Models.User
+
+@{
+    ViewData["Title"] = "User Registration";
+}
+
+<div class="row justify-content-center mt-4 mb-5">
+    <div class="col-md-6 col-lg-5">
+        <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
+            <div class="card-header bg-gradient bg-primary text-white text-center py-4">
+                <h3 class="fw-bold mb-1"><i class="bi bi-person-plus-fill me-2"></i>Create Account</h3>
+                <p class="mb-0 text-white-50 fs-6">Manufacturing Management Portal</p>
+            </div>
+            <div class="card-body p-4 p-md-5 bg-light-subtle">
+                @if (ViewBag.Error != null)
+                {
+                    <div class="alert alert-danger alert-dismissible fade show rounded-3 shadow-sm" role="alert">
+                        <strong me-1><i class="bi bi-exclamation-triangle-fill me-2"></i>Error:</strong> @ViewBag.Error
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                }
+
+                <form asp-action="Register" method="post" class="needs-validation" novalidate>
+                    <div class="mb-3">
+                        <label asp-for="FullName" class="form-label fw-semibold">Full Name</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white text-muted"><i class="bi bi-person"></i></span>
+                            <input asp-for="FullName" class="form-control form-control-lg" placeholder="Enter full name" required />
+                        </div>
+                        <span asp-validation-for="FullName" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Email" class="form-label fw-semibold">Email Address</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white text-muted"><i class="bi bi-envelope"></i></span>
+                            <input asp-for="Email" type="email" class="form-control form-control-lg" placeholder="name@company.com" required />
+                        </div>
+                        <span asp-validation-for="Email" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Mobile" class="form-label fw-semibold">Mobile Number</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white text-muted"><i class="bi bi-phone"></i></span>
+                            <input asp-for="Mobile" class="form-control form-control-lg" placeholder="+1 234 567 8900" required />
+                        </div>
+                        <span asp-validation-for="Mobile" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Role" class="form-label fw-semibold">Select Role</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white text-muted"><i class="bi bi-shield-lock"></i></span>
+                            <select asp-for="Role" class="form-select form-select-lg" required>
+                                <option value="" disabled selected>-- Select Manufacturing Role --</option>
+                                <option value="Admin">Admin</option>
+                                <option value="Production Manager">Production Manager</option>
+                                <option value="Inventory Manager">Inventory Manager</option>
+                                <option value="Machine Supervisor">Machine Supervisor</option>
+                                <option value="Shift Supervisor">Shift Supervisor</option>
+                                <option value="Machine Operator">Machine Operator</option>
+                                <option value="Quality Inspector">Quality Inspector</option>
+                                <option value="Store Manager">Store Manager</option>
+                            </select>
+                        </div>
+                        <span asp-validation-for="Role" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Username" class="form-label fw-semibold">Username</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white text-muted"><i class="bi bi-at"></i></span>
+                            <input asp-for="Username" class="form-control form-control-lg" placeholder="Choose a username" required />
+                        </div>
+                        <span asp-validation-for="Username" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-4">
+                        <label asp-for="Password" class="form-label fw-semibold">Password</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white text-muted"><i class="bi bi-key"></i></span>
+                            <input asp-for="Password" type="password" class="form-control form-control-lg" placeholder="Enter password" required />
+                        </div>
+                        <span asp-validation-for="Password" class="text-danger small"></span>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-lg w-100 fw-bold py-3 shadow-sm rounded-3">
+                        Register Account
+                    </button>
+                </form>
+            </div>
+            <div class="card-footer text-center py-3 bg-white border-top-0">
+                <p class="mb-0 text-muted">Already have an account? <a asp-action="Login" class="fw-bold text-primary text-decoration-none">Sign In</a></p>
+            </div>
+        </div>
+    </div>
+</div>
