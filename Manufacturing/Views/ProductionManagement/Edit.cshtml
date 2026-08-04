@@ -3,20 +3,22 @@
 @inject IHttpContextAccessor HttpContextAccessor
 
 @{
-    ViewData["Title"] = "Create Production Order";
-    var sessionName = HttpContextAccessor.HttpContext?.Session.GetString("FullName") 
-                   ?? HttpContextAccessor.HttpContext?.Session.GetString("Username") 
-                   ?? "Admin";
+    ViewData["Title"] = "Edit Production Order";
+    var sessionRole = HttpContextAccessor.HttpContext?.Session.GetString("Role") ?? "Admin";
 }
 
 <div class="container-fluid px-3 py-3">
     <!-- Header Banner -->
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 p-4 rounded-4 shadow-sm text-white" style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 p-4 rounded-4 shadow-sm text-white" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);">
         <div class="mb-3 mb-md-0">
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="badge bg-primary px-3 py-1 rounded-pill text-uppercase fs-7 fw-bold">Admin Operations</span>
+                <span class="badge bg-outline-light text-white-50 border border-white-50 px-2 py-1 rounded-pill fs-7">Order ID: #@Model.ProductionOrderId</span>
+            </div>
             <h2 class="fw-bold mb-1 d-flex align-items-center">
-                <i class="bi bi-plus-circle text-primary me-2 fs-2"></i> Create Production Order
+                <i class="bi bi-pencil-square text-primary me-2 fs-2"></i> Edit Production Order
             </h2>
-            <p class="text-slate-300 mb-0 opacity-75">Admin Operations: Add a new manufacturing order to the system queue</p>
+            <p class="text-slate-300 mb-0 opacity-75">Modify manufacturing specifications, order schedule, status, and administrative notes</p>
         </div>
         <div>
             <a asp-action="Index" class="btn btn-outline-light rounded-pill px-4 py-2">
@@ -25,22 +27,28 @@
         </div>
     </div>
 
-    <!-- Main Create Form Card -->
     <div class="row justify-content-center">
         <div class="col-lg-10 col-xl-8">
-            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
-                <div class="card-header bg-white border-0 pt-4 px-4 pb-0">
-                    <h5 class="fw-bold text-dark mb-0">
-                        <i class="bi bi-card-checklist me-2 text-primary"></i>Production Order Details
-                    </h5>
-                    <p class="text-muted small">Fill out the production specifications and schedule below.</p>
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+                <div class="card-header bg-white border-0 pt-4 px-4 pb-0 d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="fw-bold text-dark mb-0">
+                            <i class="bi bi-gear-fill me-2 text-primary"></i>Production Order Specifications
+                        </h5>
+                        <p class="text-muted small mb-0">Update production details below for order <strong>#@Model.OrderNo</strong>.</p>
+                    </div>
+                    <span class="badge bg-primary bg-opacity-10 text-primary border border-primary px-3 py-2 rounded-pill fw-semibold">
+                        Status: @(string.IsNullOrEmpty(Model.Status) ? "Pending" : Model.Status)
+                    </span>
                 </div>
+
                 <div class="card-body p-4">
-                    <form asp-action="Create" method="post">
+                    <form asp-action="Edit" method="post">
                         <div asp-validation-summary="ModelOnly" class="alert alert-danger rounded-3" role="alert"></div>
 
+                        <input type="hidden" asp-for="ProductionOrderId" />
+
                         <div class="row g-3">
-                            <!-- Order Number -->
                             <div class="col-md-6">
                                 <label asp-for="OrderNo" class="form-label fw-semibold text-dark">Order Number <span class="text-danger">*</span></label>
                                 <div class="input-group">
@@ -50,7 +58,6 @@
                                 <span asp-validation-for="OrderNo" class="text-danger small"></span>
                             </div>
 
-                            <!-- Product Name -->
                             <div class="col-md-6">
                                 <label asp-for="ProductName" class="form-label fw-semibold text-dark">Product Name <span class="text-danger">*</span></label>
                                 <div class="input-group">
@@ -60,7 +67,6 @@
                                 <span asp-validation-for="ProductName" class="text-danger small"></span>
                             </div>
 
-                            <!-- Quantity -->
                             <div class="col-md-6">
                                 <label asp-for="Quantity" class="form-label fw-semibold text-dark">Quantity <span class="text-danger">*</span></label>
                                 <div class="input-group">
@@ -70,7 +76,6 @@
                                 <span asp-validation-for="Quantity" class="text-danger small"></span>
                             </div>
 
-                            <!-- Unit -->
                             <div class="col-md-6">
                                 <label asp-for="Unit" class="form-label fw-semibold text-dark">Unit of Measurement</label>
                                 <div class="input-group">
@@ -88,34 +93,31 @@
                                 <span asp-validation-for="Unit" class="text-danger small"></span>
                             </div>
 
-                            <!-- Start Date -->
                             <div class="col-md-6">
                                 <label asp-for="StartDate" class="form-label fw-semibold text-dark">Start Date</label>
                                 <div class="input-group">
                                     <span class="input-group-text bg-light border-end-0"><i class="bi bi-calendar-event text-primary"></i></span>
-                                    <input asp-for="StartDate" type="date" class="form-control border-start-0 ps-0" />
+                                    <input asp-for="StartDate" type="date" class="form-control border-start-0 ps-0" value="@(Model.StartDate.HasValue ? Model.StartDate.Value.ToString("yyyy-MM-dd") : "")" />
                                 </div>
                                 <span asp-validation-for="StartDate" class="text-danger small"></span>
                             </div>
 
-                            <!-- End Date -->
                             <div class="col-md-6">
                                 <label asp-for="EndDate" class="form-label fw-semibold text-dark">Expected End Date</label>
                                 <div class="input-group">
                                     <span class="input-group-text bg-light border-end-0"><i class="bi bi-calendar-check text-success"></i></span>
-                                    <input asp-for="EndDate" type="date" class="form-control border-start-0 ps-0" />
+                                    <input asp-for="EndDate" type="date" class="form-control border-start-0 ps-0" value="@(Model.EndDate.HasValue ? Model.EndDate.Value.ToString("yyyy-MM-dd") : "")" />
                                 </div>
                                 <span asp-validation-for="EndDate" class="text-danger small"></span>
                             </div>
 
-                            <!-- Priority -->
                             <div class="col-md-6">
-                                <label asp-for="Priority" class="form-label fw-semibold text-dark">Order Priority</label>
+                                <label asp-for="Priority" class="form-label fw-semibold text-dark">Priority Level</label>
                                 <div class="input-group">
                                     <span class="input-group-text bg-light border-end-0"><i class="bi bi-exclamation-triangle text-warning"></i></span>
                                     <select asp-for="Priority" class="form-select border-start-0 ps-0">
-                                        <option value="Medium">Medium</option>
                                         <option value="Low">Low</option>
+                                        <option value="Medium">Medium</option>
                                         <option value="High">High</option>
                                         <option value="Critical">Critical</option>
                                     </select>
@@ -123,31 +125,47 @@
                                 <span asp-validation-for="Priority" class="text-danger small"></span>
                             </div>
 
-                            <!-- Created By (Pre-filled with session user) -->
                             <div class="col-md-6">
-                                <label asp-for="CreatedBy" class="form-label fw-semibold text-dark">Created By</label>
+                                <label asp-for="Status" class="form-label fw-semibold text-dark">Order Status <span class="badge bg-primary rounded-pill ms-1">Admin Control</span></label>
                                 <div class="input-group">
-                                    <span class="input-group-text bg-light border-end-0"><i class="bi bi-person-badge text-primary"></i></span>
-                                    <input asp-for="CreatedBy" class="form-control border-start-0 ps-0" value="@sessionName" placeholder="Creator Name" />
+                                    <span class="input-group-text bg-light border-end-0"><i class="bi bi-tag text-info"></i></span>
+                                    <select asp-for="Status" class="form-select border-start-0 ps-0">
+                                        <option value="Pending">Pending</option>
+                                        <option value="Approved">Approved</option>
+                                        <option value="In Progress">In Progress</option>
+                                        <option value="Completed">Completed</option>
+                                        <option value="Cancelled">Cancelled</option>
+                                    </select>
                                 </div>
-                                <span asp-validation-for="CreatedBy" class="text-danger small"></span>
+                                <span asp-validation-for="Status" class="text-danger small"></span>
                             </div>
-
-                            <!-- Remarks -->
+                            <div class="col-md-12">
+                                <div class="p-3 bg-light rounded-3 border d-flex align-items-center justify-content-between">
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi bi-person-badge fs-4 text-primary me-3"></i>
+                                        <div>
+                                            <small class="text-muted d-block">Created By</small>
+                                            <span class="fw-semibold text-dark">@(string.IsNullOrEmpty(Model.CreatedBy) ? "System" : Model.CreatedBy)</span>
+                                        </div>
+                                    </div>
+                                    <div class="text-end">
+                                        <small class="text-muted d-block">Creation Date</small>
+                                        <span class="fw-semibold text-secondary">@Model.CreatedDate.ToString("dd MMM yyyy, HH:mm")</span>
+                                    </div>
+                                </div>
+                            </div>
                             <div class="col-12">
                                 <label asp-for="Remarks" class="form-label fw-semibold text-dark">Remarks / Special Instructions</label>
-                                <textarea asp-for="Remarks" class="form-control" rows="3" placeholder="Add optional remarks, material specifications, or instructions..."></textarea>
+                                <textarea asp-for="Remarks" class="form-control" rows="3" placeholder="Add optional remarks, material specs, or production notes..."></textarea>
                                 <span asp-validation-for="Remarks" class="text-danger small"></span>
                             </div>
                         </div>
 
                         <hr class="my-4" />
-
-                        <!-- Form Submission Actions -->
                         <div class="d-flex justify-content-end gap-2">
                             <a asp-action="Index" class="btn btn-light rounded-pill px-4 fw-semibold border">Cancel</a>
                             <button type="submit" class="btn btn-primary rounded-pill px-5 fw-semibold shadow-sm">
-                                <i class="bi bi-check-circle-fill me-1"></i> Submit Production Order
+                                <i class="bi bi-save-fill me-1"></i> Save Changes
                             </button>
                         </div>
                     </form>
