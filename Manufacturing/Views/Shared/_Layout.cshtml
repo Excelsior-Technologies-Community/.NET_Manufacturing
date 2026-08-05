@@ -95,8 +95,23 @@
                                     </a>
                                 </li>
                                 <li>
+                                    <a class="dropdown-item py-2" asp-controller="Employee" asp-action="Index">
+                                        <i class="bi bi-person-badge me-2 text-primary"></i> Employee Directory
+                                    </a>
+                                </li>
+                                <li>
                                     <a class="dropdown-item py-2" asp-controller="Machine" asp-action="Index">
                                         <i class="bi bi-cpu me-2 text-info"></i> Machine Directory
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item py-2" asp-controller="Department" asp-action="Index">
+                                        <i class="bi bi-building-gear me-2 text-success"></i> Department Directory
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item py-2" asp-controller="Shift" asp-action="Index">
+                                        <i class="bi bi-clock-history me-2 text-info"></i> Shift Management
                                     </a>
                                 </li>
                                 <li><hr class="dropdown-divider"></li>
@@ -155,6 +170,43 @@
                         <li>
                             <a class="sidebar-link @(currentController == "ProductionManagement" && currentAction == "Create" ? "active" : "")" asp-controller="ProductionManagement" asp-action="Create">
                                 <i class="bi bi-plus-circle-fill text-success"></i> New Production Order
+                            </a>
+                        </li>
+                    </ul>
+
+                    <div class="sidebar-section-title mt-3">Employee & HR Management</div>
+                    <ul class="sidebar-nav">
+                        <li>
+                            <a class="sidebar-link @(currentController == "Employee" && currentAction == "Index" ? "active" : "")" asp-controller="Employee" asp-action="Index">
+                                <i class="bi bi-person-badge-fill text-indigo" style="color: #818cf8;"></i> Employee Directory
+                            </a>
+                        </li>
+                        <li>
+                            <a class="sidebar-link @(currentController == "Employee" && currentAction == "Create" ? "active" : "")" asp-controller="Employee" asp-action="Create">
+                                <i class="bi bi-person-plus-fill text-success"></i> Add New Employee
+                            </a>
+                        </li>
+                    </ul>
+
+                    <div class="sidebar-section-title mt-3">Department & Organization</div>
+                    <ul class="sidebar-nav">
+                        <li>
+                            <a class="sidebar-link @(currentController == "Department" && currentAction == "Index" ? "active" : "")" asp-controller="Department" asp-action="Index">
+                                <i class="bi bi-building-gear text-success"></i> Department Directory
+                            </a>
+                        </li>
+                    </ul>
+
+                    <div class="sidebar-section-title mt-3">Shift & Roster Management</div>
+                    <ul class="sidebar-nav">
+                        <li>
+                            <a class="sidebar-link @(currentController == "Shift" && currentAction == "Index" ? "active" : "")" asp-controller="Shift" asp-action="Index">
+                                <i class="bi bi-clock-history text-info"></i> Shift Management
+                            </a>
+                        </li>
+                        <li>
+                            <a class="sidebar-link @(currentController == "Shift" && currentAction == "Create" ? "active" : "")" asp-controller="Shift" asp-action="Create">
+                                <i class="bi bi-plus-circle-fill text-success"></i> Add New Shift
                             </a>
                         </li>
                     </ul>

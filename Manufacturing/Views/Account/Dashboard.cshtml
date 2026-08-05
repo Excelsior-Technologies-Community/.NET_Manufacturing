@@ -184,10 +184,15 @@
                     </div>
                     <div class="card-body">
                         <div class="d-grid gap-2">
-                            <a asp-action="Register" class="btn btn-outline-primary btn-lg rounded-3 text-start p-3">
-                                <i class="bi bi-person-plus-fill me-2 fs-5"></i>
-                                <strong>Register New Employee</strong>
-                                <div class="small text-muted">Add new account to manufacturing database</div>
+                            <a asp-controller="Employee" asp-action="Index" class="btn btn-outline-primary btn-lg rounded-3 text-start p-3">
+                                <i class="bi bi-person-badge-fill me-2 fs-5 text-indigo"></i>
+                                <strong>Employee Directory & HR Management</strong>
+                                <div class="small text-muted">Manage workforce profiles, shift roster & attendance</div>
+                            </a>
+                            <a asp-action="Register" class="btn btn-outline-secondary text-dark btn-lg rounded-3 text-start p-3">
+                                <i class="bi bi-person-plus-fill me-2 fs-5 text-primary"></i>
+                                <strong>Register New User Account</strong>
+                                <div class="small text-muted">Add new user login to manufacturing system</div>
                             </a>
                             <a asp-controller="Machine" asp-action="Index" class="btn btn-outline-info text-dark btn-lg rounded-3 text-start p-3">
                                 <i class="bi bi-cpu-fill me-2 fs-5 text-info"></i>
@@ -198,6 +203,11 @@
                                 <i class="bi bi-boxes me-2 fs-5 text-warning"></i>
                                 <strong>Raw Material Inventory</strong>
                                 <div class="small text-muted">Manage stock, suppliers, and low stock alerts</div>
+                            </a>
+                            <a asp-controller="Shift" asp-action="Index" class="btn btn-outline-secondary text-dark btn-lg rounded-3 text-start p-3">
+                                <i class="bi bi-clock-history me-2 fs-5 text-secondary"></i>
+                                <strong>Shift Roster & Management</strong>
+                                <div class="small text-muted">Configure shift schedules, timing, and supervisors</div>
                             </a>
                             <button class="btn btn-outline-dark btn-lg rounded-3 text-start p-3">
                                 <i class="bi bi-shield-check me-2 fs-5"></i>
@@ -285,11 +295,17 @@
     else if (Model.Role == "Shift Supervisor")
     {
         <div class="card border-0 shadow-sm rounded-4 mb-4">
-            <div class="card-header bg-secondary text-white py-3 rounded-top-4">
+            <div class="card-header bg-secondary text-white py-3 rounded-top-4 d-flex justify-content-between align-items-center">
                 <h5 class="fw-bold mb-0"><i class="bi bi-clock-history me-2"></i>Shift Operations & Roster Control</h5>
+                <a asp-controller="Shift" asp-action="Index" class="btn btn-sm btn-light rounded-pill px-3 fw-semibold">
+                    <i class="bi bi-list-task me-1"></i> View Shifts
+                </a>
             </div>
             <div class="card-body p-4">
-                <p class="mb-1 text-muted">Total Active Shift Members: <strong class="text-dark fs-5">@Model.Metric4Count</strong></p>
+                <p class="mb-3 text-muted">Total Active Shift Members: <strong class="text-dark fs-5">@Model.Metric4Count</strong></p>
+                <a asp-controller="Shift" asp-action="Index" class="btn btn-secondary rounded-pill px-4">
+                    <i class="bi bi-clock me-1"></i> Manage Factory Shift Rosters
+                </a>
             </div>
         </div>
     }

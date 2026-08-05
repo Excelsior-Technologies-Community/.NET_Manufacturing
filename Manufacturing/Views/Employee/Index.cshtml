@@ -1,0 +1,624 @@
+@model List<Manufacturing.Models.Employee>
+
+@{
+    ViewData["Title"] = "Employee Directory & Staff Management";
+
+    var employees = Model ?? new List<Manufacturing.Models.Employee>();
+    int totalCount = employees.Count;
+    int activeCount = employees.Count(e => (e.Status ?? "").Equals("Active", StringComparison.OrdinalIgnoreCase));
+    int inactiveCount = employees.Count(e => (e.Status ?? "").Equals("Inactive", StringComparison.OrdinalIgnoreCase));
+    int presentCount = employees.Count(e => (e.AttendanceStatus ?? "").Equals("Present", StringComparison.OrdinalIgnoreCase));
+}
+
+<style>
+    .header-banner {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .stat-card {
+        transition: all 0.25s ease-in-out;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 24px -6px rgba(0, 0, 0, 0.08) !important;
+    }
+
+    .emp-avatar-box {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 1.1rem;
+        background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
+        color: #4338ca;
+        border: 1px solid rgba(67, 56, 202, 0.2);
+    }
+
+    .table-custom tbody tr {
+        transition: background-color 0.15s ease;
+    }
+
+    .table-custom tbody tr:hover {
+        background-color: #f1f5f9 !important;
+    }
+
+    .badge-active {
+        background-color: #dcfce7;
+        color: #15803d;
+        border: 1px solid #bbf7d0;
+    }
+
+    .badge-inactive {
+        background-color: #fee2e2;
+        color: #b91c1c;
+        border: 1px solid #fecaca;
+    }
+
+    .badge-terminated {
+        background-color: #f3f4f6;
+        color: #4b5563;
+        border: 1px solid #e5e7eb;
+    }
+
+    .badge-present {
+        background-color: #dbeafe;
+        color: #1e40af;
+        border: 1px solid #bfdbfe;
+    }
+
+    .badge-absent {
+        background-color: #fee2e2;
+        color: #991b1b;
+        border: 1px solid #fca5a5;
+    }
+
+    .badge-leave {
+        background-color: #fef3c7;
+        color: #92400e;
+        border: 1px solid #fde68a;
+    }
+
+    .filter-btn-group .btn {
+        border-radius: 20px;
+        padding: 4px 16px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+
+    .filter-btn-group .btn.active {
+        background-color: #4338ca !important;
+        color: #ffffff !important;
+        border-color: #4338ca !important;
+    }
+
+    .action-btn {
+        width: 34px;
+        height: 34px;
+        padding: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+    }
+
+    .action-btn:hover {
+        transform: scale(1.08);
+    }
+</style>
+
+<div class="container-fluid px-4 py-4">
+
+    @if (TempData["Success"] != null || TempData["success"] != null)
+    {
+        var msg = TempData["Success"] ?? TempData["success"];
+        <div class="alert alert-success alert-dismissible fade show rounded-4 shadow-sm border-0 mb-4 p-3 d-flex align-items-center" role="alert">
+            <i class="bi bi-check-circle-fill fs-4 me-3 text-success"></i>
+            <div>
+                <strong>Success!</strong> @msg
+            </div>
+            <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- Header Banner -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 p-4 rounded-4 shadow-sm text-white header-banner position-relative overflow-hidden">
+        <div class="mb-3 mb-md-0 z-1">
+            <div class="d-flex align-items-center gap-2 mb-2">
+                <span class="badge bg-primary bg-opacity-25 text-info border border-info border-opacity-25 px-3 py-1 rounded-pill fw-semibold fs-7">
+                    <i class="bi bi-shield-check me-1"></i> Admin Operations
+                </span>
+                <span class="text-white-50 fs-7">• Manufacturing HR & Roster</span>
+            </div>
+            <h2 class="fw-bold mb-1 d-flex align-items-center gap-2">
+                <i class="bi bi-people-fill text-indigo" style="color: #a5b4fc;"></i> Employee Management Directory
+            </h2>
+            <p class="text-white-50 mb-0 fs-6">
+                Manage factory staff profiles, department assignments, work shifts, attendance records, and employment status.
+            </p>
+        </div>
+        <div class="d-flex flex-wrap gap-2 align-items-center z-1">
+            <a asp-action="Create" class="btn btn-primary rounded-pill px-4 py-2 shadow-sm fw-bold d-flex align-items-center gap-2" style="background-color: #6366f1; border-color: #6366f1;">
+                <i class="bi bi-person-plus-fill fs-5"></i>
+                <span>Add Employee</span>
+            </a>
+            <button class="btn btn-outline-light rounded-pill px-3 py-2 fw-medium d-flex align-items-center gap-2" onclick="exportToCSV()">
+                <i class="bi bi-file-earmark-spreadsheet-fill text-success fs-6"></i>
+                <span>Export CSV</span>
+            </button>
+            <a asp-controller="Account" asp-action="Dashboard" class="btn btn-outline-light rounded-pill px-3 py-2 fw-medium d-flex align-items-center gap-2">
+                <i class="bi bi-speedometer2 me-1"></i> Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- KPI Summary Stat Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card border-0 shadow-sm rounded-4 stat-card bg-white h-100">
+                <div class="card-body p-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="text-uppercase text-muted fw-bold fs-8 d-block mb-1">Total Employees</span>
+                            <h3 class="fw-bold mb-0 text-dark">@totalCount</h3>
+                            <small class="text-muted fs-8">Registered workforce</small>
+                        </div>
+                        <div class="p-3 rounded-4 bg-primary bg-opacity-10 text-primary">
+                            <i class="bi bi-people-fill fs-3"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card border-0 shadow-sm rounded-4 stat-card bg-white h-100">
+                <div class="card-body p-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="text-uppercase text-muted fw-bold fs-8 d-block mb-1">Active Staff</span>
+                            <h3 class="fw-bold mb-0 text-success">@activeCount</h3>
+                            <small class="text-muted fs-8">Currently employed</small>
+                        </div>
+                        <div class="p-3 rounded-4 bg-success bg-opacity-10 text-success">
+                            <i class="bi bi-check-circle-fill fs-3"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card border-0 shadow-sm rounded-4 stat-card bg-white h-100">
+                <div class="card-body p-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="text-uppercase text-muted fw-bold fs-8 d-block mb-1">Present Today</span>
+                            <h3 class="fw-bold mb-0 text-info">@presentCount</h3>
+                            <small class="text-muted fs-8">Active attendance</small>
+                        </div>
+                        <div class="p-3 rounded-4 bg-info bg-opacity-10 text-info">
+                            <i class="bi bi-person-check-fill fs-3"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card border-0 shadow-sm rounded-4 stat-card bg-white h-100">
+                <div class="card-body p-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="text-uppercase text-muted fw-bold fs-8 d-block mb-1">Inactive / Left</span>
+                            <h3 class="fw-bold mb-0 text-danger">@inactiveCount</h3>
+                            <small class="text-muted fs-8">Inactive staff</small>
+                        </div>
+                        <div class="p-3 rounded-4 bg-danger bg-opacity-10 text-danger">
+                            <i class="bi bi-person-x-fill fs-3"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Table Container Card -->
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-white">
+        <!-- Table Control Header -->
+        <div class="card-header bg-white border-0 py-3 px-4 d-flex justify-content-between align-items-center flex-wrap gap-3 border-bottom">
+            <div class="d-flex align-items-center gap-3">
+                <h5 class="fw-bold mb-0 text-dark d-flex align-items-center gap-2">
+                    <i class="bi bi-list-nested text-primary"></i> Employee Records
+                </h5>
+                <span class="badge bg-light text-dark border px-3 py-2 rounded-pill fw-semibold" id="tableBadgeCount">
+                    Showing @totalCount Employees
+                </span>
+            </div>
+
+            <div class="d-flex align-items-center gap-3 flex-wrap ms-auto">
+                <!-- Status Filter Pills -->
+                <div class="btn-group filter-btn-group p-1 bg-light border rounded-pill" role="group" id="statusFilterGroup">
+                    <button type="button" class="btn filter-btn active rounded-pill px-3 py-1" data-status="ALL">All</button>
+                    <button type="button" class="btn filter-btn rounded-pill px-3 py-1 text-muted" data-status="Active">Active</button>
+                    <button type="button" class="btn filter-btn rounded-pill px-3 py-1 text-muted" data-status="Inactive">Inactive</button>
+                </div>
+
+                <!-- Search Box -->
+                <div class="input-group input-group-sm" style="width: 300px;">
+                    <span class="input-group-text bg-light border-end-0 text-muted ps-3 rounded-start-pill"><i class="bi bi-search"></i></span>
+                    <input type="text" id="empSearchInput" class="form-control bg-light border-start-0 ps-0 rounded-end-pill py-2" placeholder="Search code, name, designation, dept..." />
+                </div>
+            </div>
+        </div>
+
+        <!-- Table View -->
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-custom align-middle mb-0" id="empTable">
+                    <thead class="bg-light text-muted text-uppercase fs-7 fw-bold border-bottom">
+                        <tr>
+                            <th class="ps-4 py-3" style="width: 80px;"># ID</th>
+                            <th class="py-3" style="width: 220px;">Employee Info</th>
+                            <th class="py-3" style="width: 180px;">Department & Shift</th>
+                            <th class="py-3" style="width: 150px;">Designation</th>
+                            <th class="py-3" style="width: 180px;">Contact</th>
+                            <th class="py-3" style="width: 120px;">Join Date</th>
+                            <th class="py-3" style="width: 110px;">Salary</th>
+                            <th class="py-3 text-center" style="width: 120px;">Attendance</th>
+                            <th class="py-3 text-center" style="width: 110px;">Status</th>
+                            <th class="py-3 text-end pe-4" style="width: 160px;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="empTableBody">
+                        @if (employees.Count > 0)
+                        {
+                            @foreach (var e in employees)
+                            {
+                                var initial = string.IsNullOrWhiteSpace(e.FullName) ? "E" : e.FullName.Substring(0, 1).ToUpper();
+                                var isStatusActive = (e.Status ?? "").Equals("Active", StringComparison.OrdinalIgnoreCase);
+                                var badgeClass = isStatusActive ? "badge-active" : ((e.Status ?? "").Equals("Terminated", StringComparison.OrdinalIgnoreCase) ? "badge-terminated" : "badge-inactive");
+
+                                var attStatus = e.AttendanceStatus ?? "Present";
+                                var attBadgeClass = attStatus.Equals("Present", StringComparison.OrdinalIgnoreCase) ? "badge-present" : (attStatus.Equals("Absent", StringComparison.OrdinalIgnoreCase) ? "badge-absent" : "badge-leave");
+
+                                <tr class="emp-row" data-id="@e.EmployeeId" data-code="@e.EmployeeCode" data-name="@e.FullName" data-gender="@e.Gender" data-mobile="@e.Mobile" data-email="@e.Email" data-dept="@e.DepartmentName" data-shift="@e.ShiftName" data-designation="@e.Designation" data-joindate="@(e.JoinDate.HasValue ? e.JoinDate.Value.ToString("yyyy-MM-dd") : "")" data-salary="@e.Salary" data-attendance="@e.AttendanceStatus" data-status="@e.Status" data-address="@e.Address" data-createddate="@e.CreatedDate.ToString("yyyy-MM-dd")">
+                                    <td class="ps-4 fw-bold text-secondary">#@e.EmployeeId</td>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-3 py-1">
+                                            <div class="emp-avatar-box">
+                                                @initial
+                                            </div>
+                                            <div>
+                                                <div class="fw-bold text-dark fs-6 emp-name-text">@e.FullName</div>
+                                                <div class="d-flex align-items-center gap-1 mt-1">
+                                                    <span class="badge bg-light text-primary border rounded-pill px-2 py-1 fs-8 fw-semibold emp-code-text">
+                                                        <i class="bi bi-person-badge me-1"></i>@e.EmployeeCode
+                                                    </span>
+                                                    @if (!string.IsNullOrEmpty(e.Gender))
+                                                    {
+                                                        <span class="badge bg-secondary bg-opacity-10 text-secondary border px-2 py-1 fs-8">@e.Gender</span>
+                                                    }
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="fw-semibold text-dark fs-7">
+                                            <i class="bi bi-building me-1 text-success"></i>@(string.IsNullOrEmpty(e.DepartmentName) ? "Dept #" + e.DepartmentId : e.DepartmentName)
+                                        </div>
+                                        <small class="text-muted fs-8">
+                                            <i class="bi bi-clock me-1 text-info"></i>@(string.IsNullOrEmpty(e.ShiftName) ? "Shift #" + e.ShiftId : e.ShiftName)
+                                        </small>
+                                    </td>
+                                    <td>
+                                        <span class="fw-medium text-dark fs-7">@(string.IsNullOrEmpty(e.Designation) ? "-" : e.Designation)</span>
+                                    </td>
+                                    <td>
+                                        <div class="fs-7 text-dark fw-medium">
+                                            <i class="bi bi-phone me-1 text-muted"></i>@(string.IsNullOrEmpty(e.Mobile) ? "-" : e.Mobile)
+                                        </div>
+                                        <div class="fs-8 text-muted text-truncate" style="max-width: 160px;" title="@e.Email">
+                                            <i class="bi bi-envelope me-1"></i>@(string.IsNullOrEmpty(e.Email) ? "-" : e.Email)
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="text-secondary fs-7">
+                                            <i class="bi bi-calendar-event me-1 text-primary"></i>
+                                            @(e.JoinDate.HasValue ? e.JoinDate.Value.ToString("dd MMM yyyy") : "-")
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="fw-bold text-dark fs-7">$@e.Salary.ToString("N2")</span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge @attBadgeClass rounded-pill px-3 py-1 fs-8 fw-semibold">
+                                            <i class="bi bi-dot"></i>@(string.IsNullOrEmpty(e.AttendanceStatus) ? "Present" : e.AttendanceStatus)
+                                        </span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge @badgeClass rounded-pill px-3 py-1 fs-8 fw-semibold">
+                                            @(string.IsNullOrEmpty(e.Status) ? "Active" : e.Status)
+                                        </span>
+                                    </td>
+                                    <td class="text-end pe-4">
+                                        <div class="d-flex justify-content-end gap-1">
+                                            <button type="button" class="btn btn-light text-info action-btn" title="View Profile" onclick="viewEmployeeDetails(@e.EmployeeId)">
+                                                <i class="bi bi-eye-fill"></i>
+                                            </button>
+                                            <a asp-action="Edit" asp-route-id="@e.EmployeeId" class="btn btn-light text-primary action-btn" title="Edit Employee">
+                                                <i class="bi bi-pencil-square"></i>
+                                            </a>
+                                            <a asp-action="Attendance" asp-route-id="@e.EmployeeId" class="btn btn-light text-success action-btn" title="Record Attendance">
+                                                <i class="bi bi-calendar-check-fill"></i>
+                                            </a>
+                                            <a asp-action="Delete" asp-route-id="@e.EmployeeId" class="btn btn-light text-danger action-btn" title="Delete Employee" onclick="return confirm('Are you sure you want to delete employee \'@e.FullName\'?');">
+                                                <i class="bi bi-trash-fill"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr id="noRecordsRow">
+                                <td colspan="10" class="text-center py-5 text-muted">
+                                    <i class="bi bi-person-x fs-1 d-block mb-3 text-secondary opacity-50"></i>
+                                    <h5 class="fw-bold text-dark">No Employees Found</h5>
+                                    <p class="mb-3 text-muted">No employee records are currently available in the database.</p>
+                                    <a asp-action="Create" class="btn btn-primary rounded-pill px-4 py-2 fw-semibold">
+                                        <i class="bi bi-person-plus-fill me-1"></i> Register Employee
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card-footer bg-white border-0 py-3 px-4 d-flex justify-content-between align-items-center flex-wrap gap-2 border-top">
+            <small class="text-muted" id="footerText">Showing @totalCount employee records</small>
+            <span class="badge bg-light text-muted border px-3 py-2 rounded-pill fs-8">
+                <i class="bi bi-shield-check text-success me-1"></i> HR Database Synchronized
+            </span>
+        </div>
+    </div>
+</div>
+
+<!-- View Employee Details Modal -->
+<div class="modal fade" id="viewEmpModal" tabindex="-1" aria-labelledby="viewEmpModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header bg-dark text-white rounded-top-4 py-3 px-4" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);">
+                <h5 class="modal-title fw-bold d-flex align-items-center gap-2" id="viewEmpModalLabel">
+                    <i class="bi bi-person-badge-fill text-indigo" style="color: #a5b4fc;"></i> Employee Profile & Details
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="text-center mb-4 pb-3 border-bottom">
+                    <div class="emp-avatar-box mx-auto mb-2 shadow-sm" id="viewAvatar" style="width: 64px; height: 64px; font-size: 1.8rem;">
+                        E
+                    </div>
+                    <h4 class="fw-bold mb-1 text-dark" id="viewName">-</h4>
+                    <div class="d-flex justify-content-center align-items-center gap-2 mt-2">
+                        <span class="badge bg-light text-primary border rounded-pill px-3 py-1 fs-7" id="viewCode">-</span>
+                        <span class="badge bg-success bg-opacity-10 text-success border border-success rounded-pill px-3 py-1 fs-7" id="viewStatus">-</span>
+                        <span class="badge bg-info bg-opacity-10 text-info border border-info rounded-pill px-3 py-1 fs-7" id="viewAttendance">-</span>
+                    </div>
+                </div>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="p-3 bg-light rounded-3">
+                            <small class="text-uppercase text-muted fw-bold fs-8 d-block mb-1">Department</small>
+                            <span class="fw-semibold text-dark fs-6 d-flex align-items-center gap-2" id="viewDept">
+                                <i class="bi bi-building text-success"></i> -
+                            </span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 bg-light rounded-3">
+                            <small class="text-uppercase text-muted fw-bold fs-8 d-block mb-1">Shift</small>
+                            <span class="fw-semibold text-dark fs-6 d-flex align-items-center gap-2" id="viewShift">
+                                <i class="bi bi-clock text-info"></i> -
+                            </span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 bg-light rounded-3">
+                            <small class="text-uppercase text-muted fw-bold fs-8 d-block mb-1">Designation</small>
+                            <span class="fw-semibold text-dark fs-6" id="viewDesignation">-</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 bg-light rounded-3">
+                            <small class="text-uppercase text-muted fw-bold fs-8 d-block mb-1">Salary</small>
+                            <span class="fw-bold text-success fs-6" id="viewSalary">-</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 bg-light rounded-3">
+                            <small class="text-uppercase text-muted fw-bold fs-8 d-block mb-1">Mobile Phone</small>
+                            <span class="text-dark fs-6" id="viewMobile">-</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 bg-light rounded-3">
+                            <small class="text-uppercase text-muted fw-bold fs-8 d-block mb-1">Email Address</small>
+                            <span class="text-dark fs-6" id="viewEmail">-</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 bg-light rounded-3">
+                            <small class="text-uppercase text-muted fw-bold fs-8 d-block mb-1">Join Date</small>
+                            <span class="text-dark fs-6" id="viewJoinDate">-</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 bg-light rounded-3">
+                            <small class="text-uppercase text-muted fw-bold fs-8 d-block mb-1">Gender</small>
+                            <span class="text-dark fs-6" id="viewGender">-</span>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="p-3 bg-light rounded-3">
+                            <small class="text-uppercase text-muted fw-bold fs-8 d-block mb-1">Residential Address</small>
+                            <p class="text-secondary mb-0 fs-7" id="viewAddress">-</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer bg-light rounded-bottom-4 px-4 py-3">
+                <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const searchInput = document.getElementById('empSearchInput');
+            const filterBtns = document.querySelectorAll('.filter-btn');
+
+            let currentStatusFilter = 'ALL';
+
+            if (searchInput) {
+                searchInput.addEventListener('keyup', filterTable);
+            }
+
+            filterBtns.forEach(btn => {
+                btn.addEventListener('click', function () {
+                    filterBtns.forEach(b => {
+                        b.classList.remove('active');
+                        b.classList.add('text-muted');
+                    });
+                    this.classList.add('active');
+                    this.classList.remove('text-muted');
+
+                    currentStatusFilter = this.getAttribute('data-status');
+                    filterTable();
+                });
+            });
+
+            function filterTable() {
+                const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
+                const rows = document.querySelectorAll('.emp-row');
+                let visibleCount = 0;
+
+                rows.forEach(row => {
+                    const code = (row.getAttribute('data-code') || '').toLowerCase();
+                    const name = (row.getAttribute('data-name') || '').toLowerCase();
+                    const dept = (row.getAttribute('data-dept') || '').toLowerCase();
+                    const shift = (row.getAttribute('data-shift') || '').toLowerCase();
+                    const desig = (row.getAttribute('data-designation') || '').toLowerCase();
+                    const status = (row.getAttribute('data-status') || '').toLowerCase();
+
+                    const matchesSearch = code.includes(query) || name.includes(query) || dept.includes(query) || shift.includes(query) || desig.includes(query);
+                    const matchesStatus = (currentStatusFilter === 'ALL') || (status === currentStatusFilter.toLowerCase());
+
+                    if (matchesSearch && matchesStatus) {
+                        row.style.display = '';
+                        visibleCount++;
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+
+                const badge = document.getElementById('tableBadgeCount');
+                if (badge) {
+                    badge.innerText = `Showing ${visibleCount} Employees`;
+                }
+
+                const footerText = document.getElementById('footerText');
+                if (footerText) {
+                    footerText.innerText = `Showing ${visibleCount} employee records`;
+                }
+            }
+        });
+
+        function viewEmployeeDetails(id) {
+            const row = document.querySelector(`.emp-row[data-id="${id}"]`);
+            if (!row) return;
+
+            const code = row.getAttribute('data-code');
+            const name = row.getAttribute('data-name');
+            const gender = row.getAttribute('data-gender') || 'N/A';
+            const mobile = row.getAttribute('data-mobile') || 'N/A';
+            const email = row.getAttribute('data-email') || 'N/A';
+            const dept = row.getAttribute('data-dept') || 'N/A';
+            const shift = row.getAttribute('data-shift') || 'N/A';
+            const desig = row.getAttribute('data-designation') || 'N/A';
+            const joindate = row.getAttribute('data-joindate') || 'N/A';
+            const salary = row.getAttribute('data-salary') ? `$${parseFloat(row.getAttribute('data-salary')).toFixed(2)}` : '$0.00';
+            const attendance = row.getAttribute('data-attendance') || 'Present';
+            const status = row.getAttribute('data-status') || 'Active';
+            const address = row.getAttribute('data-address') || 'No address registered.';
+
+            const initial = name ? name.charAt(0).toUpperCase() : 'E';
+
+            document.getElementById('viewAvatar').innerText = initial;
+            document.getElementById('viewName').innerText = name;
+            document.getElementById('viewCode').innerText = code;
+            document.getElementById('viewStatus').innerText = status;
+            document.getElementById('viewAttendance').innerText = `Attendance: ${attendance}`;
+            document.getElementById('viewDept').innerHTML = `<i class="bi bi-building text-success me-1"></i> ${dept}`;
+            document.getElementById('viewShift').innerHTML = `<i class="bi bi-clock text-info me-1"></i> ${shift}`;
+            document.getElementById('viewDesignation').innerText = desig;
+            document.getElementById('viewSalary').innerText = salary;
+            document.getElementById('viewMobile').innerText = mobile;
+            document.getElementById('viewEmail').innerText = email;
+            document.getElementById('viewJoinDate').innerText = joindate;
+            document.getElementById('viewGender').innerText = gender;
+            document.getElementById('viewAddress').innerText = address;
+
+            const modal = new bootstrap.Modal(document.getElementById('viewEmpModal'));
+            modal.show();
+        }
+
+        function exportToCSV() {
+            const rows = document.querySelectorAll('.emp-row');
+            if (rows.length === 0) {
+                alert('No employee data to export.');
+                return;
+            }
+
+            let csvContent = "data:text/csv;charset=utf-8,ID,Code,Name,Gender,Mobile,Email,Department,Shift,Designation,JoinDate,Salary,AttendanceStatus,Status,Address\n";
+
+            rows.forEach(r => {
+                const id = r.getAttribute('data-id');
+                const code = `"${r.getAttribute('data-code')}"`;
+                const name = `"${r.getAttribute('data-name')}"`;
+                const gender = `"${r.getAttribute('data-gender') || ''}"`;
+                const mobile = `"${r.getAttribute('data-mobile') || ''}"`;
+                const email = `"${r.getAttribute('data-email') || ''}"`;
+                const dept = `"${r.getAttribute('data-dept') || ''}"`;
+                const shift = `"${r.getAttribute('data-shift') || ''}"`;
+                const desig = `"${r.getAttribute('data-designation') || ''}"`;
+                const joindate = `"${r.getAttribute('data-joindate') || ''}"`;
+                const salary = `"${r.getAttribute('data-salary') || '0'}"`;
+                const attendance = `"${r.getAttribute('data-attendance') || ''}"`;
+                const status = `"${r.getAttribute('data-status') || ''}"`;
+                const address = `"${(r.getAttribute('data-address') || '').replace(/"/g, '""')}"`;
+
+                csvContent += `${id},${code},${name},${gender},${mobile},${email},${dept},${shift},${desig},${joindate},${salary},${attendance},${status},${address}\n`;
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `Employee_Export_${new Date().toISOString().split('T')[0]}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    </script>
+}

@@ -1,0 +1,144 @@
+@model Manufacturing.Models.Shift
+
+@{
+    ViewData["Title"] = "Edit Shift";
+    var shiftIdValue = Model?.ShiftId > 0 ? Model.ShiftId : Convert.ToInt32(ViewContext.RouteData.Values["id"] ?? 0);
+}
+
+<div class="row justify-content-center mt-4 mb-5">
+    <div class="col-md-9 col-lg-8">
+        <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
+            <div class="card-header text-white text-center py-4" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);">
+                <h3 class="fw-bold mb-1"><i class="bi bi-pencil-square me-2 text-info"></i>Edit Factory Shift</h3>
+                <p class="mb-0 text-white-50 fs-6">Update shift parameters, schedules, supervisor assignments, or status</p>
+            </div>
+            <div class="card-body p-4 p-md-5">
+                <form asp-action="Edit" method="post">
+                    <input type="hidden" name="ShiftId" value="@shiftIdValue" />
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="ShiftCode" class="form-label fw-semibold">Shift Code <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light text-muted"><i class="bi bi-barcode"></i></span>
+                                <input asp-for="ShiftCode" class="form-control form-control-lg" placeholder="e.g. SH-001" required value="@(Model?.ShiftCode)" />
+                            </div>
+                            <span asp-validation-for="ShiftCode" class="text-danger fs-7"></span>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="ShiftName" class="form-label fw-semibold">Shift Name <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light text-muted"><i class="bi bi-clock-history"></i></span>
+                                <input asp-for="ShiftName" class="form-control form-control-lg" placeholder="e.g. Morning Shift" required value="@(Model?.ShiftName)" />
+                            </div>
+                            <span asp-validation-for="ShiftName" class="text-danger fs-7"></span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="StartTime" class="form-label fw-semibold">Start Time <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light text-muted"><i class="bi bi-alarm"></i></span>
+                                <input asp-for="StartTime" id="startTimeInput" type="time" class="form-control form-control-lg" required value="@(Model?.StartTime != null ? Model.StartTime.ToString(@"hh\:mm") : "")" />
+                            </div>
+                            <span asp-validation-for="StartTime" class="text-danger fs-7"></span>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="EndTime" class="form-label fw-semibold">End Time <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light text-muted"><i class="bi bi-alarm-fill"></i></span>
+                                <input asp-for="EndTime" id="endTimeInput" type="time" class="form-control form-control-lg" required value="@(Model?.EndTime != null ? Model.EndTime.ToString(@"hh\:mm") : "")" />
+                            </div>
+                            <span asp-validation-for="EndTime" class="text-danger fs-7"></span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="TotalHours" class="form-label fw-semibold">Total Hours <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light text-muted"><i class="bi bi-hourglass-split"></i></span>
+                                <input asp-for="TotalHours" id="totalHoursInput" type="number" step="0.1" min="0" max="24" class="form-control form-control-lg" placeholder="e.g. 8.0" required value="@(Model?.TotalHours ?? 0)" />
+                            </div>
+                            <span asp-validation-for="TotalHours" class="text-danger fs-7"></span>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="SupervisorName" class="form-label fw-semibold">Supervisor Name</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light text-muted"><i class="bi bi-person-badge-fill"></i></span>
+                                <input asp-for="SupervisorName" class="form-control form-control-lg" placeholder="e.g. Vikram Sharma" value="@(Model?.SupervisorName)" />
+                            </div>
+                            <span asp-validation-for="SupervisorName" class="text-danger fs-7"></span>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Status" class="form-label fw-semibold">Status <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light text-muted"><i class="bi bi-activity"></i></span>
+                            <select asp-for="Status" class="form-select form-select-lg" required>
+                                <option value="Active" selected="@(Model?.Status == "Active" || string.IsNullOrEmpty(Model?.Status))">Active</option>
+                                <option value="Inactive" selected="@(Model?.Status == "Inactive")">Inactive</option>
+                            </select>
+                        </div>
+                        <span asp-validation-for="Status" class="text-danger fs-7"></span>
+                    </div>
+
+                    <div class="mb-4">
+                        <label asp-for="Description" class="form-label fw-semibold">Description / Shift Scope</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light text-muted"><i class="bi bi-file-text-fill"></i></span>
+                            <textarea asp-for="Description" class="form-control" rows="3" placeholder="Enter shift duties, workstation coverage, or operational notes...">@(Model?.Description)</textarea>
+                        </div>
+                        <span asp-validation-for="Description" class="text-danger fs-7"></span>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+                        <a asp-action="Index" class="btn btn-outline-secondary btn-lg rounded-3 px-4">
+                            <i class="bi bi-arrow-left me-1"></i> Back to List
+                        </a>
+                        <button type="submit" class="btn btn-primary btn-lg rounded-3 px-5 fw-bold shadow-sm">
+                            <i class="bi bi-check-circle me-1"></i> Update Shift
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const startInput = document.getElementById('startTimeInput');
+            const endInput = document.getElementById('endTimeInput');
+            const hoursInput = document.getElementById('totalHoursInput');
+
+            function calculateHours() {
+                if (startInput.value && endInput.value) {
+                    const startParts = startInput.value.split(':');
+                    const endParts = endInput.value.split(':');
+                    
+                    let startMinutes = parseInt(startParts[0], 10) * 60 + parseInt(startParts[1], 10);
+                    let endMinutes = parseInt(endParts[0], 10) * 60 + parseInt(endParts[1], 10);
+
+                    if (endMinutes < startMinutes) {
+                        endMinutes += 24 * 60; // handles overnight shift crossing midnight
+                    }
+
+                    const diffHours = (endMinutes - startMinutes) / 60;
+                    hoursInput.value = diffHours.toFixed(1);
+                }
+            }
+
+            if (startInput && endInput && hoursInput) {
+                startInput.addEventListener('change', calculateHours);
+                endInput.addEventListener('change', calculateHours);
+            }
+        });
+    </script>
+}
