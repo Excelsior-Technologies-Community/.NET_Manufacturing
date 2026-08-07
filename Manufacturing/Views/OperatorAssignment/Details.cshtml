@@ -1,0 +1,125 @@
+@model Manufacturing.Models.OperatorAssignment
+
+@{
+    ViewData["Title"] = "Operator Assignment Details";
+
+    string getStatusBadgeClass(string status)
+    {
+        switch (status?.Trim())
+        {
+            case "Assigned": return "bg-primary text-white";
+            case "In Progress": case "Active": case "Running": return "bg-info text-dark";
+            case "Completed": return "bg-success text-white";
+            case "On Leave": case "Maintenance": return "bg-warning text-dark";
+            case "Cancelled": return "bg-danger text-white";
+            default: return "bg-secondary text-white";
+        }
+    }
+}
+
+<div class="container-fluid px-3 py-3">
+    <!-- Header Banner -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 p-4 rounded-4 shadow-sm text-white" style="background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #4338ca 100%);">
+        <div class="mb-3 mb-md-0">
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="badge bg-indigo text-white px-3 py-1 rounded-pill text-uppercase fs-7 fw-bold" style="background-color: #6366f1;">Production Operations</span>
+                <span class="badge bg-outline-light text-white-50 border border-white-50 px-2 py-1 rounded-pill fs-7">Details View</span>
+            </div>
+            <h2 class="fw-bold mb-1 d-flex align-items-center">
+                <i class="bi bi-info-circle-fill text-indigo me-2 fs-2" style="color: #a5b4fc;"></i> Assignment Details #@Model.OperatorAssignmentId
+            </h2>
+            <p class="text-slate-300 mb-0 opacity-75">Complete operator allocation summary, shift info, and operation instructions</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a asp-action="Edit" asp-route-id="@Model.OperatorAssignmentId" class="btn btn-warning rounded-pill px-4 py-2 fw-semibold text-dark">
+                <i class="bi bi-pencil-square me-1"></i> Edit
+            </a>
+            <a asp-action="Index" class="btn btn-outline-light rounded-pill px-4 py-2 fw-semibold">
+                <i class="bi bi-arrow-left me-1"></i> Back to Roster
+            </a>
+        </div>
+    </div>
+
+    <!-- Main Content Card -->
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-8">
+            <div class="card border-0 shadow-sm rounded-4 bg-white overflow-hidden mb-4">
+                <div class="card-header bg-light border-0 p-4 d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-muted small text-uppercase fw-bold">Assignment Identification</div>
+                        <h4 class="fw-bold text-dark mb-0">Record #@Model.OperatorAssignmentId</h4>
+                    </div>
+                    <span class="badge @getStatusBadgeClass(Model.Status) rounded-pill px-4 py-2 fs-6 fw-bold">
+                        @Model.Status
+                    </span>
+                </div>
+
+                <div class="card-body p-4">
+                    <div class="row g-4">
+                        <div class="col-12 col-md-6">
+                            <div class="p-3 bg-light rounded-3 h-100 border">
+                                <div class="text-muted small fw-semibold text-uppercase mb-1">Production Order</div>
+                                <div class="fs-5 fw-bold text-dark d-flex align-items-center">
+                                    <i class="bi bi-hash text-indigo me-2" style="color: #4338ca;"></i>
+                                    @(string.IsNullOrEmpty(Model.OrderNo) ? "Order #" + Model.ProductionOrderId : Model.OrderNo)
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-md-6">
+                            <div class="p-3 bg-light rounded-3 h-100 border">
+                                <div class="text-muted small fw-semibold text-uppercase mb-1">Machine Operator / Staff</div>
+                                <div class="fs-5 fw-bold text-dark d-flex align-items-center">
+                                    <i class="bi bi-person-fill text-primary me-2"></i>
+                                    @(string.IsNullOrEmpty(Model.EmployeeName) ? "Employee #" + Model.EmployeeId : Model.EmployeeName)
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-md-6">
+                            <div class="p-3 bg-light rounded-3 h-100 border">
+                                <div class="text-muted small fw-semibold text-uppercase mb-1">Allocated Shift</div>
+                                <div class="fs-5 fw-bold text-dark d-flex align-items-center">
+                                    <i class="bi bi-clock-history text-info me-2"></i>
+                                    @(string.IsNullOrEmpty(Model.ShiftName) ? "Shift #" + Model.ShiftId : Model.ShiftName)
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-md-6">
+                            <div class="p-3 bg-light rounded-3 h-100 border">
+                                <div class="text-muted small fw-semibold text-uppercase mb-1">Assigned Date</div>
+                                <div class="fs-5 fw-bold text-dark d-flex align-items-center">
+                                    <i class="bi bi-calendar-check text-success me-2"></i>
+                                    @Model.AssignedDate.ToString("yyyy-MM-dd (dddd)")
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <div class="p-3 bg-light rounded-3 border">
+                                <div class="text-muted small fw-semibold text-uppercase mb-2">Remarks & Technical Instructions</div>
+                                <p class="mb-0 text-dark" style="white-space: pre-wrap;">@(string.IsNullOrWhiteSpace(Model.Remarks) ? "No special remarks provided." : Model.Remarks)</p>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-md-6">
+                            <small class="text-muted">
+                                <i class="bi bi-clock me-1"></i> Record Created: @(Model.CreatedDate != DateTime.MinValue ? Model.CreatedDate.ToString("yyyy-MM-dd HH:mm") : "-")
+                            </small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-footer bg-light border-0 p-3 d-flex justify-content-between align-items-center">
+                    <a asp-action="Index" class="btn btn-secondary rounded-pill px-4">
+                        <i class="bi bi-arrow-left me-1"></i> Back to List
+                    </a>
+                    <a asp-action="Delete" asp-route-id="@Model.OperatorAssignmentId" onclick="return confirm('Are you sure you want to delete this operator assignment?');" class="btn btn-outline-danger rounded-pill px-4">
+                        <i class="bi bi-trash-fill me-1"></i> Delete
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

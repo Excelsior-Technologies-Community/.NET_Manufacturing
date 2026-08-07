@@ -228,11 +228,14 @@
     else if (Model.Role == "Production Manager")
     {
         <div class="card border-0 shadow-sm rounded-4 mb-4">
-            <div class="card-header bg-primary text-white py-3 rounded-top-4">
+            <div class="card-header bg-primary text-white py-3 rounded-top-4 d-flex justify-content-between align-items-center">
                 <h5 class="fw-bold mb-0"><i class="bi bi-gear-wide-connected me-2"></i>Production Management Command Center</h5>
+                <a asp-controller="MachineAssignment" asp-action="Index" class="btn btn-sm btn-light rounded-pill px-3 fw-semibold">
+                    <i class="bi bi-cpu-fill text-primary me-1"></i> Machine Assignments
+                </a>
             </div>
             <div class="card-body p-4">
-                <div class="row g-3">
+                <div class="row g-3 mb-4">
                     <div class="col-md-4">
                         <div class="p-3 bg-light rounded-3 border">
                             <h6 class="fw-bold text-primary mb-1"><i class="bi bi-play-circle me-1"></i>Active Shifts</h6>
@@ -251,6 +254,18 @@
                             <p class="mb-0 text-muted">Active Inspectors: <strong>@Model.Metric3Count</strong></p>
                         </div>
                     </div>
+                </div>
+
+                <div class="d-flex flex-wrap gap-2">
+                    <a asp-controller="MachineAssignment" asp-action="Index" class="btn btn-primary rounded-pill px-4 py-2 fw-semibold">
+                        <i class="bi bi-cpu-fill me-1"></i> Manage Machine Assignments
+                    </a>
+                    <a asp-controller="MachineAssignment" asp-action="Create" class="btn btn-outline-primary rounded-pill px-4 py-2 fw-semibold">
+                        <i class="bi bi-plus-circle me-1"></i> Create Machine Assignment
+                    </a>
+                    <a asp-controller="ProductionManagement" asp-action="Index" class="btn btn-outline-secondary rounded-pill px-4 py-2 fw-semibold">
+                        <i class="bi bi-gear-wide-connected me-1"></i> View Production Orders
+                    </a>
                 </div>
             </div>
         </div>

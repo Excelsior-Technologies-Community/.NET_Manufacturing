@@ -74,6 +74,11 @@ namespace Manufacturing.Controllers
         {
             if (HttpContext.Session.GetString("UserId") != null)
             {
+                string role = HttpContext.Session.GetString("Role") ?? "";
+                if (role == "Production Manager")
+                {
+                    return RedirectToAction("ProductionManagerDashboard");
+                }
                 return RedirectToAction("Dashboard");
             }
             return View();
@@ -106,6 +111,12 @@ namespace Manufacturing.Controllers
                                 HttpContext.Session.SetString("Username", dr["Username"] != DBNull.Value ? dr["Username"].ToString()! : "");
                                 HttpContext.Session.SetString("Email", dr["Email"] != DBNull.Value ? dr["Email"].ToString()! : "");
 
+                                string role = HttpContext.Session.GetString("Role") ?? "";
+                                if (role == "Production Manager")
+                                {
+                                    return RedirectToAction("ProductionManagerDashboard");
+                                }
+
                                 return RedirectToAction("Dashboard");
                             }
                         }
@@ -130,8 +141,13 @@ namespace Manufacturing.Controllers
                 return RedirectToAction("Login");
             }
 
-            int userId = int.Parse(userIdStr);
             string sessionRole = HttpContext.Session.GetString("Role") ?? "";
+            if (sessionRole == "Production Manager")
+            {
+                return RedirectToAction("ProductionManagerDashboard");
+            }
+
+            int userId = int.Parse(userIdStr);
             string sessionFullName = HttpContext.Session.GetString("FullName") ?? "";
 
             DashboardViewModel model = new DashboardViewModel
@@ -341,6 +357,92 @@ namespace Manufacturing.Controllers
                     model.Metric4Count = model.RoleStats.Count;
                     break;
             }
+        }
+
+        public IActionResult ProductionManagerDashboard()
+        {
+            string userIdStr = HttpContext.Session.GetString("UserId");
+            if (string.IsNullOrEmpty(userIdStr))
+            {
+                return RedirectToAction("Login");
+            }
+
+            ProductionManagerDashboardViewModel model = new ProductionManagerDashboardViewModel();
+
+            try
+            {
+                using (SqlConnection con = new SqlConnection(cs))
+                {
+                    con.Open();
+
+                    string query = "SELECT * FROM ProductionOrders ORDER BY ProductionOrderId DESC";
+                    using (SqlCommand cmd = new SqlCommand(query, con))
+                    {
+                        using (SqlDataReader dr = cmd.ExecuteReader())
+                        {
+                            DateTime today = DateTime.Today;
+                            while (dr.Read())
+                            {
+                                ProductionOrder order = new ProductionOrder
+                                {
+                                    ProductionOrderId = Convert.ToInt32(dr["ProductionOrderId"]),
+                                    OrderNo = dr["OrderNo"] != DBNull.Value ? dr["OrderNo"].ToString()! : "",
+                                    ProductName = dr["ProductName"] != DBNull.Value ? dr["ProductName"].ToString()! : "",
+                                    Quantity = Convert.ToInt32(dr["Quantity"]),
+                                    Unit = dr["Unit"] != DBNull.Value ? dr["Unit"].ToString()! : "",
+                                    StartDate = dr["StartDate"] == DBNull.Value ? null : Convert.ToDateTime(dr["StartDate"]),
+                                    EndDate = dr["EndDate"] == DBNull.Value ? null : Convert.ToDateTime(dr["EndDate"]),
+                                    Priority = dr["Priority"] != DBNull.Value ? dr["Priority"].ToString()! : "",
+                                    Status = dr["Status"] != DBNull.Value ? dr["Status"].ToString()! : "Pending",
+                                    ApprovedBy = dr["ApprovedBy"] != DBNull.Value ? dr["ApprovedBy"].ToString()! : "",
+                                    ApprovedDate = dr["ApprovedDate"] == DBNull.Value ? null : Convert.ToDateTime(dr["ApprovedDate"]),
+                                    Remarks = dr["Remarks"] != DBNull.Value ? dr["Remarks"].ToString()! : "",
+                                    CreatedBy = dr["CreatedBy"] != DBNull.Value ? dr["CreatedBy"].ToString()! : "",
+                                    CreatedDate = dr["CreatedDate"] == DBNull.Value ? DateTime.Now : Convert.ToDateTime(dr["CreatedDate"]),
+                                    ModifiedDate = dr["ModifiedDate"] == DBNull.Value ? null : Convert.ToDateTime(dr["ModifiedDate"])
+                                };
+
+                                model.RecentOrders.Add(order);
+
+                                string statusStr = (order.Status ?? "").Trim();
+
+                                if (statusStr.Equals("Pending", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    model.PendingOrders.Add(order);
+                                }
+                                else if (statusStr.Equals("Approved", StringComparison.OrdinalIgnoreCase) || 
+                                         statusStr.Equals("In Progress", StringComparison.OrdinalIgnoreCase) ||
+                                         statusStr.Equals("Running", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    model.RunningOrders.Add(order);
+                                }
+                                else if (statusStr.Equals("Completed", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    model.CompletedOrders.Add(order);
+                                }
+
+                                if (order.CreatedDate.Date == today || 
+                                   (order.StartDate.HasValue && order.StartDate.Value.Date <= today && order.EndDate.HasValue && order.EndDate.Value.Date >= today))
+                                {
+                                    model.TodaysOrders.Add(order);
+                                }
+                            }
+                        }
+                    }
+
+                    model.TotalOrders = model.RecentOrders.Count;
+                    model.PendingOrdersCount = model.PendingOrders.Count;
+                    model.RunningOrdersCount = model.RunningOrders.Count;
+                    model.CompletedOrdersCount = model.CompletedOrders.Count;
+                    model.TodaysProductionCount = model.TodaysOrders.Count;
+                }
+            }
+            catch (Exception ex)
+            {
+                ViewBag.Error = "Error loading production manager dashboard: " + ex.Message;
+            }
+
+            return View(model);
         }
 
         public IActionResult Logout()

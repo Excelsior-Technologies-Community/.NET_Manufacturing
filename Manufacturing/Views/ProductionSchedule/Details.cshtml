@@ -1,0 +1,173 @@
+@model Manufacturing.Models.ProductionSchedules
+
+@{
+    ViewData["Title"] = $"Schedule #{Model.ScheduleId} Details";
+
+    string getStatusBadgeClass(string status)
+    {
+        switch (status?.Trim())
+        {
+            case "Scheduled": return "bg-primary text-white";
+            case "In Progress": return "bg-info text-dark";
+            case "Completed": return "bg-success text-white";
+            case "Delayed": return "bg-warning text-dark";
+            case "Cancelled": return "bg-danger text-white";
+            default: return "bg-secondary text-white";
+        }
+    }
+
+    string getPriorityBadgeClass(string priority)
+    {
+        switch (priority?.Trim())
+        {
+            case "Critical": return "bg-danger text-white";
+            case "High": return "bg-warning text-dark";
+            case "Medium": return "bg-info text-dark";
+            case "Low": return "bg-secondary text-white";
+            default: return "bg-light text-dark border";
+        }
+    }
+
+    var totalDays = (Model.EndDate - Model.StartDate).Days + 1;
+}
+
+<div class="container-fluid px-3 py-3">
+    <!-- Header Banner -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 p-4 rounded-4 shadow-sm text-white" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #2563eb 100%);">
+        <div class="mb-3 mb-md-0">
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="badge bg-primary px-3 py-1 rounded-pill text-uppercase fs-7 fw-bold">Schedule Overview</span>
+                <span class="badge bg-outline-light text-white-50 border border-white-50 px-2 py-1 rounded-pill fs-7">ID: #@Model.ScheduleId</span>
+            </div>
+            <h2 class="fw-bold mb-1 d-flex align-items-center">
+                <i class="bi bi-calendar-range-fill text-primary me-2 fs-2"></i> Production Schedule Details
+            </h2>
+            <p class="text-slate-300 mb-0 opacity-75">Production Manager View: Full breakdown of planned manufacturing schedule and timeline</p>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+            <a asp-action="Edit" asp-route-id="@Model.ScheduleId" class="btn btn-warning rounded-pill px-4 py-2 fw-semibold text-dark">
+                <i class="bi bi-pencil-square me-1"></i> Edit Schedule
+            </a>
+            <a asp-action="Index" class="btn btn-outline-light rounded-pill px-4 py-2">
+                <i class="bi bi-arrow-left me-1"></i> Back to Schedules
+            </a>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+            <div class="card border-0 shadow-sm rounded-4 mb-4">
+                <div class="card-header bg-white border-0 py-3 px-4 d-flex justify-content-between align-items-center">
+                    <h5 class="fw-bold mb-0 text-dark">
+                        <i class="bi bi-info-circle text-primary me-2"></i> Schedule Summary Card
+                    </h5>
+                    <div class="d-flex gap-2">
+                        <span class="badge @getPriorityBadgeClass(Model.Priority) rounded-pill px-3 py-2 fs-6">
+                            Priority: @(string.IsNullOrEmpty(Model.Priority) ? "Standard" : Model.Priority)
+                        </span>
+                        <span class="badge @getStatusBadgeClass(Model.Status) rounded-pill px-3 py-2 fs-6">
+                            @(string.IsNullOrEmpty(Model.Status) ? "Scheduled" : Model.Status)
+                        </span>
+                    </div>
+                </div>
+
+                <div class="card-body p-4">
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="p-3 bg-light rounded-3 border h-100">
+                                <small class="text-uppercase text-muted fw-bold d-block mb-1">Schedule Reference</small>
+                                <div class="fs-4 fw-bold text-dark">#@Model.ScheduleId</div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="p-3 bg-light rounded-3 border h-100">
+                                <small class="text-uppercase text-muted fw-bold d-block mb-1">Associated Production Order</small>
+                                <div class="fs-5 fw-bold text-primary">
+                                    <i class="bi bi-hash me-1"></i>@(string.IsNullOrEmpty(Model.OrderNo) ? $"Order #{Model.ProductionOrderId}" : Model.OrderNo)
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="p-3 bg-light rounded-3 border h-100">
+                                <small class="text-uppercase text-muted fw-bold d-block mb-1">Product Name</small>
+                                <div class="fs-5 fw-bold text-dark">
+                                    <i class="bi bi-box-seam me-2 text-info"></i>@(string.IsNullOrEmpty(Model.ProductName) ? "N/A" : Model.ProductName)
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="p-3 bg-light rounded-3 border h-100">
+                                <small class="text-uppercase text-muted fw-bold d-block mb-1">Target Quantity</small>
+                                <div class="fs-5 fw-bold text-dark">
+                                    <i class="bi bi-layers-fill me-2 text-warning"></i>@(Model.Quantity > 0 ? Model.Quantity.ToString("N0") : "N/A") units
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="p-3 bg-light rounded-3 border h-100">
+                                <small class="text-uppercase text-muted fw-bold d-block mb-1">Scheduled Start Date</small>
+                                <div class="fs-5 fw-bold text-success">
+                                    <i class="bi bi-calendar-check me-2"></i>@Model.StartDate.ToString("dd-MMM-yyyy")
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="p-3 bg-light rounded-3 border h-100">
+                                <small class="text-uppercase text-muted fw-bold d-block mb-1">Scheduled End Date</small>
+                                <div class="fs-5 fw-bold text-danger">
+                                    <i class="bi bi-calendar-x me-2"></i>@Model.EndDate.ToString("dd-MMM-yyyy")
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="p-3 bg-light rounded-3 border h-100">
+                                <small class="text-uppercase text-muted fw-bold d-block mb-1">Estimated Duration</small>
+                                <div class="fs-5 fw-bold text-dark">
+                                    <i class="bi bi-clock-history me-2 text-primary"></i>@(totalDays > 0 ? $"{totalDays} Days" : "N/A")
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-12">
+                            <div class="p-3 bg-light rounded-3 border">
+                                <small class="text-uppercase text-muted fw-bold d-block mb-1">Created Timestamp</small>
+                                <div class="fs-6 fw-semibold text-muted">
+                                    <i class="bi bi-clock me-1"></i>@(Model.CreatedDate != DateTime.MinValue ? Model.CreatedDate.ToString("dd-MMM-yyyy hh:mm tt") : "N/A")
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <div class="p-3 bg-light rounded-3 border">
+                                <small class="text-uppercase text-muted fw-bold d-block mb-2">Remarks & Operational Instructions</small>
+                                <p class="mb-0 text-dark fs-6" style="white-space: pre-line;">
+                                    @(string.IsNullOrEmpty(Model.Remarks) ? "No additional remarks or operational guidelines entered for this schedule." : Model.Remarks)
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-footer bg-white border-0 py-3 px-4 d-flex justify-content-between align-items-center">
+                    <a asp-action="Delete" asp-route-id="@Model.ScheduleId" class="btn btn-outline-danger rounded-pill px-4" onclick="return confirm('Are you sure you want to delete Schedule #@Model.ScheduleId?');">
+                        <i class="bi bi-trash-fill me-1"></i> Delete Schedule
+                    </a>
+                    <div class="d-flex gap-2">
+                        <a asp-action="Index" class="btn btn-outline-secondary rounded-pill px-4">
+                            <i class="bi bi-arrow-left me-1"></i> Back to Roster
+                        </a>
+                        <a asp-action="Edit" asp-route-id="@Model.ScheduleId" class="btn btn-primary rounded-pill px-4">
+                            <i class="bi bi-pencil-square me-1"></i> Edit Schedule
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

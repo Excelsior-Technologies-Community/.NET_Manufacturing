@@ -1,0 +1,275 @@
+@model List<Manufacturing.Models.ProductionSchedules>
+
+@{
+    ViewData["Title"] = "Production Schedules Management";
+
+    var schedules = Model ?? new List<Manufacturing.Models.ProductionSchedules>();
+    int totalSchedules = schedules.Count;
+    int scheduledCount = schedules.Count(s => s.Status == "Scheduled");
+    int inProgressCount = schedules.Count(s => s.Status == "In Progress");
+    int completedCount = schedules.Count(s => s.Status == "Completed");
+    int delayedCount = schedules.Count(s => s.Status == "Delayed");
+
+    string getStatusBadgeClass(string status)
+    {
+        switch (status?.Trim())
+        {
+            case "Scheduled": return "bg-primary text-white";
+            case "In Progress": return "bg-info text-dark";
+            case "Completed": return "bg-success text-white";
+            case "Delayed": return "bg-warning text-dark";
+            case "Cancelled": return "bg-danger text-white";
+            default: return "bg-secondary text-white";
+        }
+    }
+
+    string getPriorityBadgeClass(string priority)
+    {
+        switch (priority?.Trim())
+        {
+            case "Critical": return "bg-danger text-white";
+            case "High": return "bg-warning text-dark";
+            case "Medium": return "bg-info text-dark";
+            case "Low": return "bg-secondary text-white";
+            default: return "bg-light text-dark border";
+        }
+    }
+}
+
+<div class="container-fluid px-3 py-3">
+    <!-- TempData Success Alert -->
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show rounded-4 shadow-sm border-0 mb-4" role="alert">
+            <i class="bi bi-check-circle-fill me-2 fs-5 align-middle"></i>
+            <strong>Success!</strong> @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- Header Banner -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 p-4 rounded-4 shadow-sm text-white" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #2563eb 100%);">
+        <div class="mb-3 mb-md-0">
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="badge bg-primary px-3 py-1 rounded-pill text-uppercase fs-7 fw-bold">Production Operations</span>
+                <span class="badge bg-outline-light text-white-50 border border-white-50 px-2 py-1 rounded-pill fs-7">Manager Portal</span>
+            </div>
+            <h2 class="fw-bold mb-1 d-flex align-items-center">
+                <i class="bi bi-calendar-week-fill text-primary me-2 fs-2"></i> Production Schedules Management
+            </h2>
+            <p class="text-slate-300 mb-0 opacity-75">Production Manager Control: Create, organize, track, and manage factory production order schedules</p>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+            <a asp-action="Create" class="btn btn-light rounded-pill px-4 py-2 shadow-sm fw-semibold text-primary">
+                <i class="bi bi-plus-circle-fill me-1"></i> New Production Schedule
+            </a>
+            <a asp-controller="Account" asp-action="ProductionManagerDashboard" class="btn btn-outline-light rounded-pill px-3 py-2">
+                <i class="bi bi-speedometer2 me-1"></i> Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- Stat KPI Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 h-100 bg-white border-start border-4 border-primary">
+                <div class="card-body p-3 d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="text-muted small fw-semibold text-uppercase">Total Schedules</div>
+                        <div class="fs-3 fw-bold text-primary mb-0">@totalSchedules</div>
+                    </div>
+                    <div class="rounded-circle bg-primary bg-opacity-10 text-primary p-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                        <i class="bi bi-calendar-range fs-4"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 h-100 bg-white border-start border-4 border-info">
+                <div class="card-body p-3 d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="text-muted small fw-semibold text-uppercase">Scheduled</div>
+                        <div class="fs-3 fw-bold text-info mb-0">@scheduledCount</div>
+                    </div>
+                    <div class="rounded-circle bg-info bg-opacity-10 text-info p-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                        <i class="bi bi-clock-history fs-4"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 h-100 bg-white border-start border-4 border-warning">
+                <div class="card-body p-3 d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="text-muted small fw-semibold text-uppercase">In Progress / Delayed</div>
+                        <div class="fs-3 fw-bold text-warning mb-0">@(inProgressCount + delayedCount)</div>
+                    </div>
+                    <div class="rounded-circle bg-warning bg-opacity-10 text-warning p-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                        <i class="bi bi-gear-wide-connected fs-4"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 h-100 bg-white border-start border-4 border-success">
+                <div class="card-body p-3 d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="text-muted small fw-semibold text-uppercase">Completed</div>
+                        <div class="fs-3 fw-bold text-success mb-0">@completedCount</div>
+                    </div>
+                    <div class="rounded-circle bg-success bg-opacity-10 text-success p-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                        <i class="bi bi-check-circle-fill fs-4"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter & Table Card -->
+    <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-header bg-white border-0 py-3 px-4 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+            <h5 class="fw-bold mb-0 text-dark d-flex align-items-center">
+                <i class="bi bi-list-task text-primary me-2"></i> Production Schedule Records
+            </h5>
+            <div class="d-flex flex-wrap gap-2">
+                <div class="input-group input-group-sm" style="width: 250px;">
+                    <span class="input-group-text bg-light border-end-0"><i class="bi bi-search text-muted"></i></span>
+                    <input type="text" id="scheduleSearchInput" class="form-control bg-light border-start-0" placeholder="Search order, product..." />
+                </div>
+                <select id="statusFilter" class="form-select form-select-sm" style="width: 150px;">
+                    <option value="">All Statuses</option>
+                    <option value="Scheduled">Scheduled</option>
+                    <option value="In Progress">In Progress</option>
+                    <option value="Completed">Completed</option>
+                    <option value="Delayed">Delayed</option>
+                    <option value="Cancelled">Cancelled</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="card-body p-0">
+            @if (!schedules.Any())
+            {
+                <div class="text-center py-5">
+                    <div class="mb-3">
+                        <i class="bi bi-calendar-x text-muted" style="font-size: 3rem;"></i>
+                    </div>
+                    <h5 class="fw-bold text-dark">No Production Schedules Found</h5>
+                    <p class="text-muted mb-3">Create your first production schedule to start planning manufacturing orders.</p>
+                    <a asp-action="Create" class="btn btn-primary rounded-pill px-4 py-2">
+                        <i class="bi bi-plus-circle-fill me-1"></i> Add Production Schedule
+                    </a>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0" id="scheduleTable">
+                        <thead class="bg-light text-muted small text-uppercase fw-bold">
+                            <tr>
+                                <th class="ps-4" style="width: 90px;">ID</th>
+                                <th>Production Order</th>
+                                <th>Product Details</th>
+                                <th>Schedule Timeline</th>
+                                <th class="text-center">Priority</th>
+                                <th class="text-center">Status</th>
+                                <th>Remarks</th>
+                                <th class="text-end pe-4" style="width: 170px;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in schedules)
+                            {
+                                <tr class="schedule-row">
+                                    <td class="ps-4 fw-bold text-dark">
+                                        #@item.ScheduleId
+                                    </td>
+                                    <td>
+                                        <div class="fw-bold text-primary">
+                                            <i class="bi bi-hash me-1"></i>@(string.IsNullOrEmpty(item.OrderNo) ? $"Order #{item.ProductionOrderId}" : item.OrderNo)
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="fw-semibold text-dark">@(string.IsNullOrEmpty(item.ProductName) ? "N/A" : item.ProductName)</div>
+                                        <div class="small text-muted">Quantity: @(item.Quantity > 0 ? item.Quantity.ToString("N0") : "N/A") units</div>
+                                    </td>
+                                    <td>
+                                        <div class="small">
+                                            <span class="text-success fw-semibold"><i class="bi bi-calendar-check me-1"></i>Start:</span> @item.StartDate.ToString("dd-MMM-yyyy")
+                                        </div>
+                                        <div class="small">
+                                            <span class="text-danger fw-semibold"><i class="bi bi-calendar-x me-1"></i>End:</span> @item.EndDate.ToString("dd-MMM-yyyy")
+                                        </div>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge @getPriorityBadgeClass(item.Priority) rounded-pill px-3 py-1 fs-7">
+                                            @(string.IsNullOrEmpty(item.Priority) ? "Standard" : item.Priority)
+                                        </span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge @getStatusBadgeClass(item.Status) rounded-pill px-3 py-1 fs-7">
+                                            @(string.IsNullOrEmpty(item.Status) ? "Scheduled" : item.Status)
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="small text-muted text-truncate d-inline-block" style="max-width: 180px;" title="@item.Remarks">
+                                            @(string.IsNullOrEmpty(item.Remarks) ? "-" : item.Remarks)
+                                        </span>
+                                    </td>
+                                    <td class="text-end pe-4">
+                                        <div class="btn-group btn-group-sm rounded-pill shadow-sm" role="group">
+                                            <a asp-action="Details" asp-route-id="@item.ScheduleId" class="btn btn-outline-info" title="View Details">
+                                                <i class="bi bi-eye-fill"></i>
+                                            </a>
+                                            <a asp-action="Edit" asp-route-id="@item.ScheduleId" class="btn btn-outline-warning text-dark" title="Edit Schedule">
+                                                <i class="bi bi-pencil-fill"></i>
+                                            </a>
+                                            <a asp-action="Delete" asp-route-id="@item.ScheduleId" class="btn btn-outline-danger" title="Delete Schedule" onclick="return confirm('Are you sure you want to delete Schedule #@item.ScheduleId?');">
+                                                <i class="bi bi-trash-fill"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const searchInput = document.getElementById('scheduleSearchInput');
+            const statusFilter = document.getElementById('statusFilter');
+            const rows = document.querySelectorAll('#scheduleTable tbody .schedule-row');
+
+            function filterTable() {
+                const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
+                const selectedStatus = statusFilter ? statusFilter.value.toLowerCase().trim() : '';
+
+                rows.forEach(row => {
+                    const text = row.innerText.toLowerCase();
+                    const statusCell = row.children[5].innerText.toLowerCase().trim();
+
+                    const matchesSearch = text.includes(query);
+                    const matchesStatus = !selectedStatus || statusCell.includes(selectedStatus);
+
+                    if (matchesSearch && matchesStatus) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            }
+
+            if (searchInput) searchInput.addEventListener('keyup', filterTable);
+            if (statusFilter) statusFilter.addEventListener('change', filterTable);
+        });
+    </script>
+}

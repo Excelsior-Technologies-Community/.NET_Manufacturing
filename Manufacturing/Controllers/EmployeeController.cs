@@ -103,7 +103,7 @@ namespace Manufacturing.Controllers
             return RedirectToAction("Index");
         }
 
-      
+    
         public void LoadDropdown()
         {
             using(SqlConnection con = new SqlConnection(cs))
