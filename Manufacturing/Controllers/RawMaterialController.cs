@@ -1,7 +1,8 @@
+using Manufacturing.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Data.SqlClient;
 
-namespace Manufacturing.Models
+namespace Manufacturing.Controllers
 {
     public class RawMaterialController : Controller
     {

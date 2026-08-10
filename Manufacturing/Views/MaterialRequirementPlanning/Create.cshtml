@@ -1,0 +1,166 @@
+@model Manufacturing.Models.MaterialRequirementPlanning
+
+@{
+    ViewData["Title"] = "New Material Requirement Plan";
+}
+
+<div class="container-fluid px-3 py-3">
+    <div class="d-flex justify-content-between align-items-center mb-4 p-4 rounded-4 shadow-sm text-white" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0d9488 100%);">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="badge bg-teal px-3 py-1 rounded-pill text-uppercase fs-7 fw-bold" style="background-color: #14b8a6;">Inventory & MRP</span>
+                <span class="badge bg-outline-light text-white-50 border border-white-50 px-2 py-1 rounded-pill fs-7">Production Manager Portal</span>
+            </div>
+            <h2 class="fw-bold mb-1 d-flex align-items-center">
+                <i class="bi bi-plus-circle-fill text-info me-2 fs-2"></i> Create Material Requirement
+            </h2>
+            <p class="text-slate-300 mb-0 opacity-75">Production Manager: Map required raw material quantities for production orders</p>
+        </div>
+        <div>
+            <a asp-action="Index" class="btn btn-outline-light rounded-pill px-4 py-2">
+                <i class="bi bi-arrow-left me-1"></i> Back to Roster
+            </a>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-header bg-white border-0 py-3 px-4 border-bottom">
+                    <h5 class="fw-bold mb-0 text-dark">
+                        <i class="bi bi-boxes text-teal me-2" style="color: #0d9488;"></i> MRP Entry Form
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <form asp-action="Create" method="post">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label asp-for="ProductionOrderId" class="form-label fw-semibold">Production Order <span class="text-danger">*</span></label>
+                                <select asp-for="ProductionOrderId" asp-items="@(ViewBag.OrderList as List<SelectListItem>)" class="form-select rounded-3 py-2" required>
+                                    <option value="">-- Select Production Order --</option>
+                                </select>
+                                <span asp-validation-for="ProductionOrderId" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="MaterialId" class="form-label fw-semibold">Raw Material <span class="text-danger">*</span></label>
+                                <select asp-for="MaterialId" asp-items="@(ViewBag.MaterialList as List<SelectListItem>)" class="form-select rounded-3 py-2" required>
+                                    <option value="">-- Select Raw Material --</option>
+                                </select>
+                                <span asp-validation-for="MaterialId" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label asp-for="RequiredQuantity" class="form-label fw-semibold">Required Quantity <span class="text-danger">*</span></label>
+                                <input asp-for="RequiredQuantity" id="reqQty" type="number" min="0" class="form-control rounded-3 py-2" placeholder="e.g. 500" required />
+                                <span asp-validation-for="RequiredQuantity" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label asp-for="AvailableQuantity" class="form-label fw-semibold">Available Stock Qty <span class="text-danger">*</span></label>
+                                <input asp-for="AvailableQuantity" id="availQty" type="number" min="0" class="form-control rounded-3 py-2" placeholder="e.g. 350" required />
+                                <span asp-validation-for="AvailableQuantity" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label asp-for="ShortageQuantity" class="form-label fw-semibold">Shortage Quantity</label>
+                                <input asp-for="ShortageQuantity" id="shortQty" type="number" min="0" class="form-control rounded-3 py-2 bg-light" readonly />
+                                <span asp-validation-for="ShortageQuantity" class="text-danger small"></span>
+                            </div>
+
+                            <!-- Live Shortage / Coverage Indicator -->
+                            <div class="col-12">
+                                <div class="alert alert-light border rounded-3 p-3 mb-0 d-flex align-items-center justify-content-between" id="calcBox">
+                                    <div>
+                                        <small class="text-muted text-uppercase fw-semibold d-block">Inventory Coverage Analysis</small>
+                                        <span id="coverageText" class="fw-bold fs-6 text-dark">Enter Required and Available stock quantities...</span>
+                                    </div>
+                                    <div id="coverageBadgeContainer">
+                                        <span class="badge bg-secondary rounded-pill px-3 py-2 fs-7" id="coverageBadge">N/A</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="Status" class="form-label fw-semibold">MRP Status <span class="text-danger">*</span></label>
+                                <select asp-for="Status" id="mrpStatus" class="form-select rounded-3 py-2" required>
+                                    <option value="Sufficient">Sufficient (Stock Available)</option>
+                                    <option value="Shortage Alert">Shortage Alert (Reorder Needed)</option>
+                                    <option value="Pending">Pending Evaluation</option>
+                                </select>
+                                <span asp-validation-for="Status" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="PlanningDate" class="form-label fw-semibold">Planning Date <span class="text-danger">*</span></label>
+                                <input asp-for="PlanningDate" type="date" class="form-control rounded-3 py-2" value="@DateTime.Today.ToString("yyyy-MM-dd")" required />
+                                <span asp-validation-for="PlanningDate" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-12">
+                                <label asp-for="Remarks" class="form-label fw-semibold">Remarks & Reorder Instructions</label>
+                                <textarea asp-for="Remarks" class="form-control rounded-3" rows="3" maxlength="500" placeholder="Enter notes on supplier lead times, stock reordering or material quality specifications..."></textarea>
+                                <span asp-validation-for="Remarks" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
+                            <a asp-action="Index" class="btn btn-outline-secondary rounded-pill px-4 py-2">Cancel</a>
+                            <button type="submit" class="btn btn-primary rounded-pill px-4 py-2 fw-semibold" style="background-color: #0d9488; border-color: #0d9488;">
+                                <i class="bi bi-check-circle-fill me-1"></i> Save Material Requirement
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const reqInput = document.getElementById('reqQty');
+            const availInput = document.getElementById('availQty');
+            const shortInput = document.getElementById('shortQty');
+            const coverageText = document.getElementById('coverageText');
+            const coverageBadge = document.getElementById('coverageBadge');
+            const statusSelect = document.getElementById('mrpStatus');
+
+            function updateCalc() {
+                const req = parseInt(reqInput.value) || 0;
+                const avail = parseInt(availInput.value) || 0;
+
+                const shortage = Math.max(0, req - avail);
+                shortInput.value = shortage;
+
+                if (req > 0) {
+                    const coveragePct = Math.min(100, ((avail / req) * 100)).toFixed(1);
+
+                    if (shortage === 0) {
+                        coverageText.innerHTML = `Stock Coverage: <span class="text-success">${coveragePct}% Covered</span> (No shortage)`;
+                        coverageBadge.className = 'badge bg-success rounded-pill px-3 py-2 fs-7';
+                        coverageBadge.textContent = 'Sufficient Stock';
+                        if (statusSelect.value === 'Pending' || statusSelect.value === 'Shortage Alert') {
+                            statusSelect.value = 'Sufficient';
+                        }
+                    } else {
+                        coverageText.innerHTML = `Stock Coverage: <span class="text-danger">${coveragePct}% Covered</span> (Shortage of ${shortage} units)`;
+                        coverageBadge.className = 'badge bg-danger rounded-pill px-3 py-2 fs-7';
+                        coverageBadge.textContent = `Shortage Alert (${shortage} units)`;
+                        statusSelect.value = 'Shortage Alert';
+                    }
+                } else {
+                    coverageText.textContent = 'Enter Required and Available stock quantities...';
+                    coverageBadge.className = 'badge bg-secondary rounded-pill px-3 py-2 fs-7';
+                    coverageBadge.textContent = 'N/A';
+                }
+            }
+
+            if (reqInput && availInput) {
+                reqInput.addEventListener('input', updateCalc);
+                availInput.addEventListener('input', updateCalc);
+            }
+        });
+    </script>
+}

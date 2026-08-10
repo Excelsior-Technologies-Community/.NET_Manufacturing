@@ -138,6 +138,21 @@
                                         <i class="bi bi-calendar-week-fill me-2 text-primary"></i> Production Schedules
                                     </a>
                                 </li>
+                                <li>
+                                    <a class="dropdown-item py-2" asp-controller="CapacityPlanning" asp-action="Index">
+                                        <i class="bi bi-bar-chart-steps me-2 text-info"></i> Capacity Planning
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item py-2" asp-controller="MaterialRequirementPlanning" asp-action="Index">
+                                        <i class="bi bi-boxes me-2 text-teal" style="color: #0d9488;"></i> Material Requirement Planning (MRP)
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item py-2" asp-controller="MaterialStock" asp-action="Index">
+                                        <i class="bi bi-box-seam-fill me-2 text-warning"></i> Material Stock Inventory
+                                    </a>
+                                </li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li>
                                     <a class="dropdown-item py-2 text-danger fw-semibold" asp-controller="Account" asp-action="Logout">
@@ -229,6 +244,36 @@
                                     <i class="bi bi-calendar-plus-fill text-success"></i> Add Production Schedule
                                 </a>
                             </li>
+                            <li>
+                                <a class="sidebar-link @(currentController == "CapacityPlanning" && currentAction == "Index" ? "active" : "")" asp-controller="CapacityPlanning" asp-action="Index">
+                                    <i class="bi bi-bar-chart-steps text-info"></i> Capacity Planning
+                                </a>
+                            </li>
+                            <li>
+                                <a class="sidebar-link @(currentController == "CapacityPlanning" && currentAction == "Create" ? "active" : "")" asp-controller="CapacityPlanning" asp-action="Create">
+                                    <i class="bi bi-plus-circle-fill text-success"></i> Add Capacity Plan
+                                </a>
+                            </li>
+                            <li>
+                                <a class="sidebar-link @(currentController == "MaterialRequirementPlanning" && currentAction == "Index" ? "active" : "")" asp-controller="MaterialRequirementPlanning" asp-action="Index">
+                                    <i class="bi bi-boxes text-info"></i> Material Requirements (MRP)
+                                </a>
+                            </li>
+                            <li>
+                                <a class="sidebar-link @(currentController == "MaterialRequirementPlanning" && currentAction == "Create" ? "active" : "")" asp-controller="MaterialRequirementPlanning" asp-action="Create">
+                                    <i class="bi bi-plus-circle-fill text-success"></i> New MRP Requirement
+                                </a>
+                            </li>
+                            <li>
+                                <a class="sidebar-link @(currentController == "MaterialStock" && currentAction == "Index" ? "active" : "")" asp-controller="MaterialStock" asp-action="Index">
+                                    <i class="bi bi-box-seam-fill text-warning"></i> Material Stock Inventory
+                                </a>
+                            </li>
+                            <li>
+                                <a class="sidebar-link @(currentController == "MaterialStock" && currentAction == "Create" ? "active" : "")" asp-controller="MaterialStock" asp-action="Create">
+                                    <i class="bi bi-plus-circle-fill text-success"></i> Add Material Stock
+                                </a>
+                            </li>
                         </ul>
 
                         <div class="sidebar-section-title mt-3">Equipment Directory</div>
@@ -306,6 +351,36 @@
                             <li>
                                 <a class="sidebar-link @(currentController == "ProductionSchedule" && currentAction == "Create" ? "active" : "")" asp-controller="ProductionSchedule" asp-action="Create">
                                     <i class="bi bi-calendar-plus-fill text-success"></i> New Production Schedule
+                                </a>
+                            </li>
+                            <li>
+                                <a class="sidebar-link @(currentController == "CapacityPlanning" && currentAction == "Index" ? "active" : "")" asp-controller="CapacityPlanning" asp-action="Index">
+                                    <i class="bi bi-bar-chart-steps text-info"></i> Capacity Planning
+                                </a>
+                            </li>
+                            <li>
+                                <a class="sidebar-link @(currentController == "CapacityPlanning" && currentAction == "Create" ? "active" : "")" asp-controller="CapacityPlanning" asp-action="Create">
+                                    <i class="bi bi-plus-circle-fill text-success"></i> New Capacity Plan
+                                </a>
+                            </li>
+                            <li>
+                                <a class="sidebar-link @(currentController == "MaterialStock" && currentAction == "Index" ? "active" : "")" asp-controller="MaterialStock" asp-action="Index">
+                                    <i class="bi bi-box-seam-fill text-warning"></i> Material Stock Inventory
+                                </a>
+                            </li>
+                            <li>
+                                <a class="sidebar-link @(currentController == "MaterialStock" && currentAction == "Create" ? "active" : "")" asp-controller="MaterialStock" asp-action="Create">
+                                    <i class="bi bi-plus-circle-fill text-success"></i> Add Material Stock
+                                </a>
+                            </li>
+                            <li>
+                                <a class="sidebar-link @(currentController == "MaterialRequirementPlanning" && currentAction == "Index" ? "active" : "")" asp-controller="MaterialRequirementPlanning" asp-action="Index">
+                                    <i class="bi bi-boxes text-info"></i> Material Requirements (MRP)
+                                </a>
+                            </li>
+                            <li>
+                                <a class="sidebar-link @(currentController == "MaterialRequirementPlanning" && currentAction == "Create" ? "active" : "")" asp-controller="MaterialRequirementPlanning" asp-action="Create">
+                                    <i class="bi bi-plus-circle-fill text-success"></i> New MRP Requirement
                                 </a>
                             </li>
                         </ul>

@@ -1,0 +1,146 @@
+@model Manufacturing.Models.MaterialStock
+@using Microsoft.AspNetCore.Http
+@inject IHttpContextAccessor HttpContextAccessor
+
+@{
+    ViewData["Title"] = "New Material Stock Entry";
+    var defaultUserName = HttpContextAccessor.HttpContext?.Session.GetString("FullName") ?? "Production Manager";
+}
+
+<div class="container-fluid px-3 py-3">
+    <!-- Header Banner -->
+    <div class="d-flex justify-content-between align-items-center mb-4 p-4 rounded-4 shadow-sm text-white" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #d97706 100%);">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="badge bg-warning text-dark px-3 py-1 rounded-pill text-uppercase fs-7 fw-bold">Inventory Control</span>
+                <span class="badge bg-outline-light text-white-50 border border-white-50 px-2 py-1 rounded-pill fs-7">Production Manager Portal</span>
+            </div>
+            <h2 class="fw-bold mb-1 d-flex align-items-center">
+                <i class="bi bi-plus-circle-fill text-warning me-2 fs-2"></i> Add Material Stock
+            </h2>
+            <p class="text-slate-300 mb-0 opacity-75">Production Manager: Record stock additions and update inventory totals</p>
+        </div>
+        <div>
+            <a asp-action="Index" class="btn btn-outline-light rounded-pill px-4 py-2">
+                <i class="bi bi-arrow-left me-1"></i> Back to Roster
+            </a>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-header bg-white border-0 py-3 px-4 border-bottom">
+                    <h5 class="fw-bold mb-0 text-dark">
+                        <i class="bi bi-box-seam-fill text-warning me-2"></i> Material Stock Entry Form
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <form asp-action="Create" method="post">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label asp-for="MaterialId" class="form-label fw-semibold">Raw Material <span class="text-danger">*</span></label>
+                                <select asp-for="MaterialId" asp-items="@(ViewBag.MaterialList as List<SelectListItem>)" class="form-select rounded-3 py-2" required>
+                                    <option value="">-- Select Raw Material --</option>
+                                </select>
+                                <span asp-validation-for="MaterialId" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="UpdatedBy" class="form-label fw-semibold">Updated By / Operator Name <span class="text-danger">*</span></label>
+                                <input asp-for="UpdatedBy" type="text" class="form-control rounded-3 py-2" value="@defaultUserName" required />
+                                <span asp-validation-for="UpdatedBy" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label asp-for="CurrentStock" class="form-label fw-semibold">Current Stock Qty <span class="text-danger">*</span></label>
+                                <input asp-for="CurrentStock" id="currentStock" type="number" min="0" class="form-control rounded-3 py-2" placeholder="e.g. 1000" required />
+                                <span asp-validation-for="CurrentStock" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label asp-for="AddedStock" class="form-label fw-semibold">Added Stock Qty <span class="text-danger">*</span></label>
+                                <input asp-for="AddedStock" id="addedStock" type="number" min="0" class="form-control rounded-3 py-2" placeholder="e.g. 250" required />
+                                <span asp-validation-for="AddedStock" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label asp-for="UpdatedStock" class="form-label fw-semibold">New Total Updated Stock</label>
+                                <input asp-for="UpdatedStock" id="updatedStock" type="number" min="0" class="form-control rounded-3 py-2 bg-light fw-bold text-primary" readonly />
+                                <span asp-validation-for="UpdatedStock" class="text-danger small"></span>
+                            </div>
+
+                            <!-- Live Stock Addition Breakdown Box -->
+                            <div class="col-12">
+                                <div class="alert alert-light border rounded-3 p-3 mb-0 d-flex align-items-center justify-content-between" id="calcBox">
+                                    <div>
+                                        <small class="text-muted text-uppercase fw-semibold d-block">Stock Replenishment Summary</small>
+                                        <span id="summaryText" class="fw-bold fs-6 text-dark">Enter Current and Added Stock to calculate total inventory...</span>
+                                    </div>
+                                    <div id="summaryBadgeContainer">
+                                        <span class="badge bg-secondary rounded-pill px-3 py-2 fs-7" id="summaryBadge">N/A</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="UpdatedDate" class="form-label fw-semibold">Updated Date <span class="text-danger">*</span></label>
+                                <input asp-for="UpdatedDate" type="date" class="form-control rounded-3 py-2" value="@DateTime.Today.ToString("yyyy-MM-dd")" required />
+                                <span asp-validation-for="UpdatedDate" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-12">
+                                <label asp-for="Remarks" class="form-label fw-semibold">Stock Remarks & PO Reference</label>
+                                <textarea asp-for="Remarks" class="form-control rounded-3" rows="3" maxlength="500" placeholder="Enter optional notes regarding batch numbers, invoice numbers, or storage location..."></textarea>
+                                <span asp-validation-for="Remarks" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
+                            <a asp-action="Index" class="btn btn-outline-secondary rounded-pill px-4 py-2">Cancel</a>
+                            <button type="submit" class="btn btn-warning rounded-pill px-4 py-2 fw-semibold text-dark">
+                                <i class="bi bi-check-circle-fill me-1"></i> Save Material Stock
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const currentInput = document.getElementById('currentStock');
+            const addedInput = document.getElementById('addedStock');
+            const updatedInput = document.getElementById('updatedStock');
+            const summaryText = document.getElementById('summaryText');
+            const summaryBadge = document.getElementById('summaryBadge');
+
+            function updateCalc() {
+                const current = parseInt(currentInput.value) || 0;
+                const added = parseInt(addedInput.value) || 0;
+                const total = current + added;
+
+                updatedInput.value = total;
+
+                if (current >= 0 && added >= 0 && total > 0) {
+                    const addedPct = ((added / total) * 100).toFixed(1);
+                    summaryText.innerHTML = `Stock Increment: Current <strong>${current.toLocaleString()}</strong> + Added <span class="text-success">+${added.toLocaleString()}</span> = New Total <strong class="text-primary">${total.toLocaleString()}</strong>`;
+                    summaryBadge.className = 'badge bg-success rounded-pill px-3 py-2 fs-7';
+                    summaryBadge.textContent = `+${addedPct}% Added`;
+                } else {
+                    summaryText.textContent = 'Enter Current and Added Stock to calculate total inventory...';
+                    summaryBadge.className = 'badge bg-secondary rounded-pill px-3 py-2 fs-7';
+                    summaryBadge.textContent = 'N/A';
+                }
+            }
+
+            if (currentInput && addedInput) {
+                currentInput.addEventListener('input', updateCalc);
+                addedInput.addEventListener('input', updateCalc);
+            }
+        });
+    </script>
+}

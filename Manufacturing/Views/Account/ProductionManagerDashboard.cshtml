@@ -47,6 +47,15 @@
                         <a asp-controller="OperatorAssignment" asp-action="Index" class="btn btn-outline-light rounded-pill px-3 py-2 shadow-sm">
                             <i class="bi bi-person-badge-fill me-1"></i> Operators
                         </a>
+                        <a asp-controller="CapacityPlanning" asp-action="Index" class="btn btn-outline-light rounded-pill px-3 py-2 shadow-sm">
+                            <i class="bi bi-bar-chart-steps me-1"></i> Capacity
+                        </a>
+                        <a asp-controller="MaterialRequirementPlanning" asp-action="Index" class="btn btn-outline-light rounded-pill px-3 py-2 shadow-sm">
+                            <i class="bi bi-boxes me-1"></i> MRP
+                        </a>
+                        <a asp-controller="MaterialStock" asp-action="Index" class="btn btn-outline-light rounded-pill px-3 py-2 shadow-sm">
+                            <i class="bi bi-box-seam-fill me-1"></i> Stock
+                        </a>
                     </div>
                 </div>
             </div>
@@ -155,6 +164,24 @@
                     </a>
                     <a asp-controller="Shift" asp-action="Index" class="btn btn-outline-secondary rounded-pill px-3 py-2 fw-semibold">
                         <i class="bi bi-clock-history me-1"></i> Shift Roster
+                    </a>
+                    <a asp-controller="CapacityPlanning" asp-action="Index" class="btn btn-outline-primary rounded-pill px-3 py-2 fw-semibold">
+                        <i class="bi bi-bar-chart-steps me-1"></i> Capacity Planning
+                    </a>
+                    <a asp-controller="CapacityPlanning" asp-action="Create" class="btn btn-outline-success rounded-pill px-3 py-2 fw-semibold">
+                        <i class="bi bi-plus-circle me-1"></i> New Capacity Plan
+                    </a>
+                    <a asp-controller="MaterialRequirementPlanning" asp-action="Index" class="btn btn-outline-info text-dark rounded-pill px-3 py-2 fw-semibold">
+                        <i class="bi bi-boxes me-1"></i> Material Requirements (MRP)
+                    </a>
+                    <a asp-controller="MaterialRequirementPlanning" asp-action="Create" class="btn btn-outline-success rounded-pill px-3 py-2 fw-semibold">
+                        <i class="bi bi-plus-circle me-1"></i> New MRP Requirement
+                    </a>
+                    <a asp-controller="MaterialStock" asp-action="Index" class="btn btn-outline-warning text-dark rounded-pill px-3 py-2 fw-semibold">
+                        <i class="bi bi-box-seam-fill me-1"></i> Material Stock Inventory
+                    </a>
+                    <a asp-controller="MaterialStock" asp-action="Create" class="btn btn-outline-success rounded-pill px-3 py-2 fw-semibold">
+                        <i class="bi bi-plus-circle me-1"></i> Add Material Stock
                     </a>
                 </div>
             </div>

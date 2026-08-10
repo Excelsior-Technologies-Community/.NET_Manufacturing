@@ -1,0 +1,185 @@
+@model Manufacturing.Models.CapacityPlanning
+
+@{
+    ViewData["Title"] = $"Capacity Plan #{Model.CapacityPlanId} Details";
+
+    decimal variance = Model.AvailableHours - Model.RequiredHours;
+    double utilization = Model.AvailableHours > 0 ? (double)((Model.RequiredHours / Model.AvailableHours) * 100) : 0;
+    string utilProgressBarClass = utilization switch
+    {
+        <= 75 => "bg-success",
+        <= 100 => "bg-info",
+        <= 120 => "bg-warning",
+        _ => "bg-danger"
+    };
+
+    string getStatusBadgeClass(string? status)
+    {
+        switch (status?.Trim())
+        {
+            case "Optimal":
+            case "Balanced":
+            case "Feasible":
+                return "bg-success text-white";
+            case "Under Capacity":
+            case "Deficit":
+                return "bg-warning text-dark";
+            case "Over Capacity":
+            case "Overloaded":
+                return "bg-danger text-white";
+            case "Pending":
+                return "bg-info text-dark";
+            default:
+                return "bg-secondary text-white";
+        }
+    }
+}
+
+<div class="container-fluid px-3 py-3">
+    <!-- Header Banner -->
+    <div class="d-flex justify-content-between align-items-center mb-4 p-4 rounded-4 shadow-sm text-white" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #2563eb 100%);">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="badge bg-primary px-3 py-1 rounded-pill text-uppercase fs-7 fw-bold">Capacity Details</span>
+                <span class="badge bg-outline-light text-white-50 border border-white-50 px-2 py-1 rounded-pill fs-7">Plan #@Model.CapacityPlanId</span>
+            </div>
+            <h2 class="fw-bold mb-1 d-flex align-items-center">
+                <i class="bi bi-bar-chart-steps text-primary me-2 fs-2"></i> Capacity Plan Overview
+            </h2>
+            <p class="text-slate-300 mb-0 opacity-75">Production Manager Control: Comprehensive capacity analysis and machine workload review</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a asp-action="Edit" asp-route-id="@Model.CapacityPlanId" class="btn btn-light rounded-pill px-3 py-2 shadow-sm text-primary fw-semibold">
+                <i class="bi bi-pencil-square me-1"></i> Edit Plan
+            </a>
+            <a asp-action="Index" class="btn btn-outline-light rounded-pill px-3 py-2">
+                <i class="bi bi-arrow-left me-1"></i> Back to Roster
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Main Capacity Planning Summary Card -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm rounded-4 mb-4">
+                <div class="card-header bg-white border-0 py-3 px-4 d-flex justify-content-between align-items-center border-bottom">
+                    <h5 class="fw-bold mb-0 text-dark">
+                        <i class="bi bi-info-circle-fill me-2 text-primary"></i> Capacity Plan Specification
+                    </h5>
+                    <span class="badge @getStatusBadgeClass(Model.CapacityStatus) rounded-pill px-3 py-2 fs-7">
+                        @Model.CapacityStatus
+                    </span>
+                </div>
+                <div class="card-body p-4">
+                    <!-- Workload Progress Bar -->
+                    <div class="mb-4 p-3 bg-light rounded-3 border">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="fw-semibold text-dark">Workload Utilization Rate</span>
+                            <span class="fw-bold text-dark">@utilization.ToString("F1")%</span>
+                        </div>
+                        <div class="progress rounded-pill" style="height: 12px;">
+                            <div class="progress-bar @utilProgressBarClass progress-bar-striped progress-bar-animated" role="progressbar" style="width: @Math.Min(utilization, 100)%;" aria-valuenow="@utilization" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mt-2 small text-muted">
+                            <span>Required: <strong>@Model.RequiredHours.ToString("N1") hrs</strong></span>
+                            <span>Available: <strong>@Model.AvailableHours.ToString("N1") hrs</strong></span>
+                            <span>
+                                Net Variance: 
+                                <strong class="@(variance >= 0 ? "text-success" : "text-danger")">
+                                    @(variance >= 0 ? "+" : "")@variance.ToString("N1") hrs
+                                </strong>
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="p-3 bg-light rounded-3 border h-100">
+                                <small class="text-muted text-uppercase fw-semibold d-block mb-1">Production Order No</small>
+                                <span class="fs-5 fw-bold text-primary">
+                                    <i class="bi bi-hash"></i>@(string.IsNullOrEmpty(Model.OrderNo) ? Model.ProductionOrderId.ToString() : Model.OrderNo)
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="p-3 bg-light rounded-3 border h-100">
+                                <small class="text-muted text-uppercase fw-semibold d-block mb-1">Assigned Machine</small>
+                                <span class="fs-5 fw-bold text-dark">
+                                    <i class="bi bi-cpu me-1 text-info"></i>@(string.IsNullOrEmpty(Model.MachineName) ? Model.MachineId.ToString() : Model.MachineName)
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="p-3 bg-light rounded-3 border h-100">
+                                <small class="text-muted text-uppercase fw-semibold d-block mb-1">Available Machine Hours</small>
+                                <span class="fs-4 fw-bold text-dark">@Model.AvailableHours.ToString("N1") <small class="fs-6 text-muted">Hours</small></span>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="p-3 bg-light rounded-3 border h-100">
+                                <small class="text-muted text-uppercase fw-semibold d-block mb-1">Required Order Hours</small>
+                                <span class="fs-4 fw-bold text-dark">@Model.RequiredHours.ToString("N1") <small class="fs-6 text-muted">Hours</small></span>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="p-3 bg-light rounded-3 border h-100">
+                                <small class="text-muted text-uppercase fw-semibold d-block mb-1">Planning Date</small>
+                                <span class="fs-6 fw-bold text-dark">
+                                    <i class="bi bi-calendar-event me-2 text-primary"></i>@Model.PlanningDate.ToString("dd MMMM yyyy")
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="p-3 bg-light rounded-3 border h-100">
+                                <small class="text-muted text-uppercase fw-semibold d-block mb-1">Creation Date</small>
+                                <span class="fs-6 fw-bold text-dark">
+                                    <i class="bi bi-clock-history me-2 text-muted"></i>@Model.CreatedDate.ToString("dd MMMM yyyy, hh:mm tt")
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <div class="p-3 bg-light rounded-3 border">
+                                <small class="text-muted text-uppercase fw-semibold d-block mb-1">Remarks & Bottleneck Notes</small>
+                                <p class="mb-0 text-dark">
+                                    @(string.IsNullOrEmpty(Model.Remarks) ? "No remarks or additional notes provided for this capacity plan." : Model.Remarks)
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Side Quick Info & Action Panel -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm rounded-4 mb-4">
+                <div class="card-header bg-white border-0 py-3 px-4 border-bottom">
+                    <h5 class="fw-bold mb-0 text-dark">
+                        <i class="bi bi-gear-fill me-2 text-primary"></i> Management Actions
+                    </h5>
+                </div>
+                <div class="card-body p-4 d-flex flex-column gap-2">
+                    <a asp-action="Edit" asp-route-id="@Model.CapacityPlanId" class="btn btn-primary rounded-pill py-2 fw-semibold w-100">
+                        <i class="bi bi-pencil-square me-1"></i> Edit Plan Details
+                    </a>
+                    <a asp-action="Create" class="btn btn-outline-primary rounded-pill py-2 fw-semibold w-100">
+                        <i class="bi bi-plus-circle me-1"></i> Create New Capacity Plan
+                    </a>
+                    <a asp-action="Index" class="btn btn-outline-secondary rounded-pill py-2 fw-semibold w-100">
+                        <i class="bi bi-list-task me-1"></i> Return to Roster
+                    </a>
+                    <hr class="my-2" />
+                    <a asp-action="Delete" asp-route-id="@Model.CapacityPlanId" class="btn btn-outline-danger rounded-pill py-2 fw-semibold w-100" onclick="return confirm('Are you sure you want to delete this capacity plan?');">
+                        <i class="bi bi-trash-fill me-1"></i> Delete Capacity Plan
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
