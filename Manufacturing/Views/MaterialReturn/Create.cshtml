@@ -1,0 +1,144 @@
+@model Manufacturing.Models.MaterialReturn
+
+@{
+    ViewData["Title"] = "Record Material Return";
+
+    var materialList = ViewBag.MaterialList as List<SelectListItem> ?? new List<SelectListItem>();
+    var orderList = ViewBag.OrderList as List<SelectListItem> ?? new List<SelectListItem>();
+
+    var defaultDate = Model?.ReturnDate != default && Model?.ReturnDate != null 
+        ? Model.ReturnDate.ToString("yyyy-MM-ddTHH:mm") 
+        : DateTime.Now.ToString("yyyy-MM-ddTHH:mm");
+}
+
+<div class="container-fluid px-3 py-3">
+    <!--   -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 p-4 rounded-4 shadow-sm text-white" style="background: linear-gradient(135deg, #0f172a 0%, #172554 50%, #1d4ed8 100%);">
+        <div class="mb-3 mb-md-0">
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="badge bg-primary px-3 py-1 rounded-pill text-uppercase fs-7 fw-bold">Material Return</span>
+                <span class="badge bg-outline-light text-white-50 border border-white-50 px-2 py-1 rounded-pill fs-7">Production Manager Portal</span>
+            </div>
+            <h2 class="fw-bold mb-1 d-flex align-items-center">
+                <i class="bi bi-plus-circle-fill text-blue-300 me-2 fs-2"></i> Record Raw Material Return
+            </h2>
+            <p class="text-slate-300 mb-0 opacity-75">Return unused raw materials from production order back into warehouse inventory</p>
+        </div>
+        <div>
+            <a asp-action="Index" class="btn btn-outline-light rounded-pill px-4 py-2 shadow-sm">
+                <i class="bi bi-arrow-left me-1"></i> Back to Material Returns List
+            </a>
+        </div>
+    </div>
+
+    <!-- Form Card -->
+    <div class="row justify-content-center">
+        <div class="col-lg-10 col-xl-8">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-white">
+                <div class="card-header bg-white py-3 px-4 border-bottom">
+                    <h5 class="fw-bold mb-0 text-dark">
+                        <i class="bi bi-file-earmark-plus me-2 text-primary"></i> Material Return Form
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <form asp-action="Create" method="post">
+                        <input type="hidden" name="MaterialName" value="N/A" />
+                        <input type="hidden" name="OrderNo" value="N/A" />
+                        <div asp-validation-summary="All" class="alert alert-danger rounded-3 mb-4" role="alert"></div>
+
+                        <div class="row g-3 mb-3">
+                            <!-- Production Order ID -->
+                            <div class="col-md-6">
+                                <label asp-for="ProductionOrderId" class="form-label fw-semibold text-dark">
+                                    <i class="bi bi-gear-wide-connected text-primary me-1"></i> Production Order <span class="text-danger">*</span>
+                                </label>
+                                <select asp-for="ProductionOrderId" class="form-select rounded-3 py-2" asp-items="orderList" required>
+                                    <option value="">-- Select Production Order --</option>
+                                </select>
+                                <span asp-validation-for="ProductionOrderId" class="text-danger small"></span>
+                            </div>
+
+                            <!-- Raw Material ID -->
+                            <div class="col-md-6">
+                                <label asp-for="MaterialId" class="form-label fw-semibold text-dark">
+                                    <i class="bi bi-boxes text-warning me-1"></i> Raw Material <span class="text-danger">*</span>
+                                </label>
+                                <select asp-for="MaterialId" class="form-select rounded-3 py-2" asp-items="materialList" required>
+                                    <option value="">-- Select Raw Material --</option>
+                                </select>
+                                <span asp-validation-for="MaterialId" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <!-- Return Quantity -->
+                            <div class="col-md-6">
+                                <label asp-for="ReturnQuantity" class="form-label fw-semibold text-dark">
+                                    <i class="bi bi-box-seam text-info me-1"></i> Return Quantity <span class="text-danger">*</span>
+                                </label>
+                                <input asp-for="ReturnQuantity" type="number" min="1" class="form-control rounded-3 py-2" placeholder="e.g. 25" required />
+                                <span asp-validation-for="ReturnQuantity" class="text-danger small"></span>
+                            </div>
+
+                            <!-- Return Date -->
+                            <div class="col-md-6">
+                                <label asp-for="ReturnDate" class="form-label fw-semibold text-dark">
+                                    <i class="bi bi-calendar-event text-success me-1"></i> Return Date & Time <span class="text-danger">*</span>
+                                </label>
+                                <input asp-for="ReturnDate" type="datetime-local" value="@defaultDate" class="form-control rounded-3 py-2" required />
+                                <span asp-validation-for="ReturnDate" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <!-- Returned By -->
+                            <div class="col-md-6">
+                                <label asp-for="ReturnedBy" class="form-label fw-semibold text-dark">
+                                    <i class="bi bi-person-badge text-primary me-1"></i> Returned By (Person / Manager)
+                                </label>
+                                <input asp-for="ReturnedBy" type="text" class="form-control rounded-3 py-2" value="Production Manager" placeholder="e.g. Production Supervisor / Manager Name" />
+                                <span asp-validation-for="ReturnedBy" class="text-danger small"></span>
+                            </div>
+
+                            <!-- Status -->
+                            <div class="col-md-6">
+                                <label asp-for="Status" class="form-label fw-semibold text-dark">
+                                    <i class="bi bi-tag text-primary me-1"></i> Status
+                                </label>
+                                <select asp-for="Status" class="form-select rounded-3 py-2">
+                                    <option value="Returned" selected>Returned</option>
+                                    <option value="Pending">Pending</option>
+                                    <option value="Approved">Approved</option>
+                                    <option value="Completed">Completed</option>
+                                    <option value="Under Review">Under Review</option>
+                                </select>
+                                <span asp-validation-for="Status" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <!-- Remarks -->
+                        <div class="mb-4">
+                            <label asp-for="Remarks" class="form-label fw-semibold text-dark">
+                                <i class="bi bi-card-text text-secondary me-1"></i> Remarks / Notes
+                            </label>
+                            <textarea asp-for="Remarks" rows="3" class="form-control rounded-3" placeholder="Add reason for return (e.g., Excess material from production order)..."></textarea>
+                            <span asp-validation-for="Remarks" class="text-danger small"></span>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="d-flex justify-content-end gap-2 border-top pt-3">
+                            <a asp-action="Index" class="btn btn-light rounded-pill px-4">Cancel</a>
+                            <button type="submit" class="btn btn-primary rounded-pill px-4 shadow-sm">
+                                <i class="bi bi-check-circle-fill me-1"></i> Save Material Return
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

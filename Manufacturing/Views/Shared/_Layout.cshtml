@@ -153,6 +153,21 @@
                                         <i class="bi bi-box-seam-fill me-2 text-warning"></i> Material Stock Inventory
                                     </a>
                                 </li>
+                                <li>
+                                    <a class="dropdown-item py-2" asp-controller="MaterialIssue" asp-action="Index">
+                                        <i class="bi bi-box-arrow-up-right me-2 text-indigo" style="color: #6366f1;"></i> Material Issue Roster
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item py-2" asp-controller="MaterialReturn" asp-action="Index">
+                                        <i class="bi bi-box-arrow-in-left me-2 text-primary"></i> Material Return Roster
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item py-2" asp-controller="StockVerification" asp-action="Index">
+                                        <i class="bi bi-clipboard-check-fill me-2 text-indigo" style="color: #6366f1;"></i> Stock Verification Audit
+                                    </a>
+                                </li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li>
                                     <a class="dropdown-item py-2 text-danger fw-semibold" asp-controller="Account" asp-action="Logout">
@@ -274,6 +289,36 @@
                                     <i class="bi bi-plus-circle-fill text-success"></i> Add Material Stock
                                 </a>
                             </li>
+                            <li>
+                                <a class="sidebar-link @(currentController == "MaterialIssue" && currentAction == "Index" ? "active" : "")" asp-controller="MaterialIssue" asp-action="Index">
+                                    <i class="bi bi-box-arrow-up-right text-indigo" style="color: #6366f1;"></i> Material Issues
+                                </a>
+                            </li>
+                            <li>
+                                <a class="sidebar-link @(currentController == "MaterialIssue" && currentAction == "Create" ? "active" : "")" asp-controller="MaterialIssue" asp-action="Create">
+                                    <i class="bi bi-plus-circle-fill text-success"></i> Issue Raw Material
+                                </a>
+                            </li>
+                            <li>
+                                <a class="sidebar-link @(currentController == "MaterialReturn" && currentAction == "Index" ? "active" : "")" asp-controller="MaterialReturn" asp-action="Index">
+                                    <i class="bi bi-box-arrow-in-left text-primary"></i> Material Returns
+                                </a>
+                            </li>
+                            <li>
+                                <a class="sidebar-link @(currentController == "MaterialReturn" && currentAction == "Create" ? "active" : "")" asp-controller="MaterialReturn" asp-action="Create">
+                                    <i class="bi bi-plus-circle-fill text-success"></i> Return Raw Material
+                                </a>
+                            </li>
+                            <li>
+                                <a class="sidebar-link @(currentController == "StockVerification" && currentAction == "Index" ? "active" : "")" asp-controller="StockVerification" asp-action="Index">
+                                    <i class="bi bi-clipboard-check-fill text-indigo" style="color: #6366f1;"></i> Stock Verification
+                                </a>
+                            </li>
+                            <li>
+                                <a class="sidebar-link @(currentController == "StockVerification" && currentAction == "Create" ? "active" : "")" asp-controller="StockVerification" asp-action="Create">
+                                    <i class="bi bi-plus-circle-fill text-success"></i> Audit Physical Stock
+                                </a>
+                            </li>
                         </ul>
 
                         <div class="sidebar-section-title mt-3">Equipment Directory</div>
@@ -381,6 +426,26 @@
                             <li>
                                 <a class="sidebar-link @(currentController == "MaterialRequirementPlanning" && currentAction == "Create" ? "active" : "")" asp-controller="MaterialRequirementPlanning" asp-action="Create">
                                     <i class="bi bi-plus-circle-fill text-success"></i> New MRP Requirement
+                                </a>
+                            </li>
+                            <li>
+                                <a class="sidebar-link @(currentController == "MaterialIssue" && currentAction == "Index" ? "active" : "")" asp-controller="MaterialIssue" asp-action="Index">
+                                    <i class="bi bi-box-arrow-up-right text-indigo" style="color: #6366f1;"></i> Material Issues
+                                </a>
+                            </li>
+                            <li>
+                                <a class="sidebar-link @(currentController == "MaterialIssue" && currentAction == "Create" ? "active" : "")" asp-controller="MaterialIssue" asp-action="Create">
+                                    <i class="bi bi-plus-circle-fill text-success"></i> Issue Raw Material
+                                </a>
+                            </li>
+                            <li>
+                                <a class="sidebar-link @(currentController == "MaterialReturn" && currentAction == "Index" ? "active" : "")" asp-controller="MaterialReturn" asp-action="Index">
+                                    <i class="bi bi-box-arrow-in-left text-primary"></i> Material Returns
+                                </a>
+                            </li>
+                            <li>
+                                <a class="sidebar-link @(currentController == "MaterialReturn" && currentAction == "Create" ? "active" : "")" asp-controller="MaterialReturn" asp-action="Create">
+                                    <i class="bi bi-plus-circle-fill text-success"></i> Return Raw Material
                                 </a>
                             </li>
                         </ul>

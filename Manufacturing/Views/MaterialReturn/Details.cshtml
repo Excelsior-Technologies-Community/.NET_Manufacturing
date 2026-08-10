@@ -1,0 +1,202 @@
+@model Manufacturing.Models.MaterialReturn
+
+@{
+    ViewData["Title"] = "Material Return Details";
+
+    string getStatusBadgeClass(string? status)
+    {
+        switch (status?.Trim().ToLower())
+        {
+            case "returned":
+            case "approved":
+            case "completed":
+                return "bg-success text-white";
+            case "pending":
+            case "draft":
+            case "under review":
+                return "bg-warning text-dark";
+            case "rejected":
+            case "cancelled":
+                return "bg-danger text-white";
+            default:
+                return "bg-secondary text-white";
+        }
+    }
+}
+
+<div class="container-fluid px-3 py-3">
+    <!-- Header Banner -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 p-4 rounded-4 shadow-sm text-white" style="background: linear-gradient(135deg, #0f172a 0%, #172554 50%, #1d4ed8 100%);">
+        <div class="mb-3 mb-md-0">
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="badge bg-info text-dark px-3 py-1 rounded-pill text-uppercase fs-7 fw-bold">Material Return Specification</span>
+                <span class="badge bg-outline-light text-white-50 border border-white-50 px-2 py-1 rounded-pill fs-7">Production Manager Portal</span>
+            </div>
+            <h2 class="fw-bold mb-1 d-flex align-items-center">
+                <i class="bi bi-info-circle-fill text-info me-2 fs-2"></i> Return Details #MR-@(Model?.ReturnId.ToString("D4") ?? "0000")
+            </h2>
+            <p class="text-slate-300 mb-0 opacity-75">Detailed overview of raw material returned from production back into warehouse inventory</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a asp-action="Edit" asp-route-id="@(Model?.ReturnId ?? 0)" class="btn btn-warning rounded-pill px-4 py-2 shadow-sm fw-semibold">
+                <i class="bi bi-pencil-square me-1"></i> Edit Return
+            </a>
+            <a asp-action="Index" class="btn btn-outline-light rounded-pill px-4 py-2 shadow-sm">
+                <i class="bi bi-arrow-left me-1"></i> Back to List
+            </a>
+        </div>
+    </div>
+
+    <!-- Details Grid -->
+    <div class="row g-4">
+        <!-- Left Overview Card -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-white mb-4">
+                <div class="card-header bg-white py-3 px-4 border-bottom d-flex justify-content-between align-items-center">
+                    <h5 class="fw-bold mb-0 text-dark">
+                        <i class="bi bi-card-heading text-primary me-2"></i> Return Information
+                    </h5>
+                    <span class="badge @getStatusBadgeClass(Model?.Status) rounded-pill px-3 py-2 fs-7">
+                        @(string.IsNullOrEmpty(Model?.Status) ? "Returned" : Model.Status)
+                    </span>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row g-4">
+                        <!-- Production Order -->
+                        <div class="col-md-6">
+                            <div class="p-3 rounded-3 bg-light border h-100">
+                                <small class="text-muted text-uppercase fw-semibold d-block mb-1 fs-7">Production Order</small>
+                                <div class="d-flex align-items-center">
+                                    <div class="rounded-circle bg-primary bg-opacity-10 text-primary p-2 me-2">
+                                        <i class="bi bi-gear-wide-connected fs-4"></i>
+                                    </div>
+                                    <div>
+                                        <h5 class="fw-bold text-dark mb-0">@(string.IsNullOrEmpty(Model?.OrderNo) ? $"Order #{Model?.ProductionOrderId}" : Model.OrderNo)</h5>
+                                        <small class="text-muted">Order ID: @Model?.ProductionOrderId</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Raw Material -->
+                        <div class="col-md-6">
+                            <div class="p-3 rounded-3 bg-light border h-100">
+                                <small class="text-muted text-uppercase fw-semibold d-block mb-1 fs-7">Returned Raw Material</small>
+                                <div class="d-flex align-items-center">
+                                    <div class="rounded-circle bg-warning bg-opacity-10 text-warning p-2 me-2">
+                                        <i class="bi bi-boxes fs-4"></i>
+                                    </div>
+                                    <div>
+                                        <h5 class="fw-bold text-dark mb-0">@(string.IsNullOrEmpty(Model?.MaterialName) ? $"Material #{Model?.MaterialId}" : Model.MaterialName)</h5>
+                                        <small class="text-muted">Material ID: @Model?.MaterialId</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Returned Quantity -->
+                        <div class="col-md-6">
+                            <div class="p-3 rounded-3 bg-light border h-100">
+                                <small class="text-muted text-uppercase fw-semibold d-block mb-1 fs-7">Quantity Returned</small>
+                                <div class="d-flex align-items-center">
+                                    <div class="rounded-circle bg-info bg-opacity-10 text-info p-2 me-2">
+                                        <i class="bi bi-box-seam-fill fs-4"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="fw-bold text-primary mb-0">@(Model?.ReturnQuantity.ToString("N0") ?? "0") <span class="fs-6 text-muted font-normal">Units</span></h4>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Return Date & Time -->
+                        <div class="col-md-6">
+                            <div class="p-3 rounded-3 bg-light border h-100">
+                                <small class="text-muted text-uppercase fw-semibold d-block mb-1 fs-7">Return Date & Time</small>
+                                <div class="d-flex align-items-center">
+                                    <div class="rounded-circle bg-success bg-opacity-10 text-success p-2 me-2">
+                                        <i class="bi bi-calendar-check fs-4"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="fw-bold text-dark mb-0">@(Model != null && Model.ReturnDate != default ? Model.ReturnDate.ToString("yyyy-MM-dd HH:mm") : "-")</h6>
+                                        <small class="text-muted">@(Model != null && Model.ReturnDate != default ? Model.ReturnDate.ToString("dddd, MMMM dd, yyyy") : "")</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Remarks Section -->
+                    <div class="mt-4 pt-3 border-top">
+                        <h6 class="fw-bold text-dark mb-2">
+                            <i class="bi bi-chat-left-text text-secondary me-1"></i> Remarks & Reason for Return
+                        </h6>
+                        <div class="p-3 rounded-3 bg-light border text-dark">
+                            @(string.IsNullOrEmpty(Model?.Remarks) ? "No remarks or specific notes recorded for this return." : Model.Remarks)
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Side Audit & Actions Card -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-white mb-4">
+                <div class="card-header bg-white py-3 px-4 border-bottom">
+                    <h5 class="fw-bold mb-0 text-dark">
+                        <i class="bi bi-shield-check text-success me-2"></i> Audit Summary
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <ul class="list-group list-group-flush border-0">
+                        <li class="list-group-item px-0 d-flex justify-content-between align-items-center py-2 border-bottom">
+                            <span class="text-muted">Return Reference ID</span>
+                            <span class="fw-bold text-dark">#MR-@(Model?.ReturnId.ToString("D4") ?? "0000")</span>
+                        </li>
+                        <li class="list-group-item px-0 d-flex justify-content-between align-items-center py-2 border-bottom">
+                            <span class="text-muted">Returned By</span>
+                            <span class="fw-semibold text-dark">@(string.IsNullOrEmpty(Model?.ReturnedBy) ? "System / N/A" : Model.ReturnedBy)</span>
+                        </li>
+                        <li class="list-group-item px-0 d-flex justify-content-between align-items-center py-2 border-bottom">
+                            <span class="text-muted">Status</span>
+                            <span class="badge @getStatusBadgeClass(Model?.Status) rounded-pill px-2 py-1">@(string.IsNullOrEmpty(Model?.Status) ? "Returned" : Model.Status)</span>
+                        </li>
+                        <li class="list-group-item px-0 d-flex justify-content-between align-items-center py-2 border-bottom">
+                            <span class="text-muted">Record Created Date</span>
+                            <span class="fw-semibold text-dark fs-7">@(Model != null && Model.CreatedDate != default ? Model.CreatedDate.ToString("yyyy-MM-dd HH:mm") : "-")</span>
+                        </li>
+                    </ul>
+
+                    <div class="d-grid gap-2 mt-4">
+                        <a asp-action="Edit" asp-route-id="@(Model?.ReturnId ?? 0)" class="btn btn-warning rounded-pill py-2 fw-semibold">
+                            <i class="bi bi-pencil-square me-1"></i> Edit Return Record
+                        </a>
+                        <button type="button" class="btn btn-outline-danger rounded-pill py-2" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                            <i class="bi bi-trash me-1"></i> Delete Return Record
+                        </button>
+                    </div>
+
+                    <!-- Delete Modal -->
+                    <div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content rounded-4 border-0 shadow">
+                                <div class="modal-header border-0 pb-0">
+                                    <h5 class="modal-title fw-bold text-danger">Confirm Deletion</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body text-start py-3">
+                                    <p>Are you sure you want to delete Material Return <strong>#MR-@(Model?.ReturnId.ToString("D4") ?? "0000")</strong>?</p>
+                                </div>
+                                <div class="modal-footer border-0 pt-0">
+                                    <button type="button" class="btn btn-light rounded-pill px-3" data-bs-dismiss="modal">Cancel</button>
+                                    <a asp-action="Delete" asp-route-id="@(Model?.ReturnId ?? 0)" class="btn btn-danger rounded-pill px-3">Delete Return</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

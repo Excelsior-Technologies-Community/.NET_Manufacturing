@@ -1,0 +1,271 @@
+@model List<Manufacturing.Models.StockVerification>
+
+@{
+    ViewData["Title"] = "Stock Verification Management";
+
+    var verifications = Model ?? new List<Manufacturing.Models.StockVerification>();
+    int totalVerifications = verifications.Count;
+    long totalSystemStock = verifications.Sum(v => (long)v.SystemStock);
+    long totalPhysicalStock = verifications.Sum(v => (long)v.PhysicalStock);
+    long totalDiscrepancy = verifications.Sum(v => (long)v.DifferenceStock);
+    int matchedCount = verifications.Count(v => v.DifferenceStock == 0);
+    int discrepancyCount = verifications.Count(v => v.DifferenceStock != 0);
+
+    string getStatusBadgeClass(string? status)
+    {
+        switch (status?.Trim().ToLower())
+        {
+            case "verified":
+            case "approved":
+            case "completed":
+            case "matched":
+                return "bg-success text-white";
+            case "pending":
+            case "under review":
+            case "draft":
+                return "bg-warning text-dark";
+            case "discrepancy":
+            case "adjusted":
+            case "rejected":
+                return "bg-danger text-white";
+            default:
+                return "bg-info text-white";
+        }
+    }
+}
+
+<div class="container-fluid px-3 py-3">
+    <!-- TempData Success Alert -->
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show rounded-4 shadow-sm border-0 mb-4" role="alert">
+            <i class="bi bi-check-circle-fill me-2 fs-5 align-middle"></i>
+            <strong>Success!</strong> @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- Header Banner -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 p-4 rounded-4 shadow-sm text-white" style="background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #4f46e5 100%);">
+        <div class="mb-3 mb-md-0">
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="badge bg-indigo px-3 py-1 rounded-pill text-uppercase fs-7 fw-bold" style="background-color: #6366f1;">Stock Audit & Verification</span>
+                <span class="badge bg-outline-light text-white-50 border border-white-50 px-2 py-1 rounded-pill fs-7">Production Manager Portal</span>
+            </div>
+            <h2 class="fw-bold mb-1 d-flex align-items-center">
+                <i class="bi bi-clipboard-check-fill text-indigo-300 me-2 fs-2"></i> Physical Stock Verification Roster
+            </h2>
+            <p class="text-slate-300 mb-0 opacity-75">Production Manager Control: Audit physical stock count against system records and track inventory variances</p>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+            <a asp-action="Create" class="btn btn-light rounded-pill px-4 py-2 shadow-sm fw-semibold text-indigo" style="color: #4f46e5;">
+                <i class="bi bi-plus-circle-fill me-1"></i> Perform Stock Audit
+            </a>
+            <a asp-controller="Account" asp-action="ProductionManagerDashboard" class="btn btn-outline-light rounded-pill px-3 py-2">
+                <i class="bi bi-speedometer2 me-1"></i> Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- Stat/KPI Cards Row -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 h-100 bg-white border-start border-4 border-indigo" style="border-left-color: #6366f1 !important;">
+                <div class="card-body p-3 d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="text-muted small fw-semibold text-uppercase">Total Audits</div>
+                        <div class="fs-3 fw-bold text-dark mb-0">@totalVerifications</div>
+                    </div>
+                    <div class="rounded-circle bg-indigo bg-opacity-10 p-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; background-color: rgba(99, 102, 241, 0.1); color: #6366f1;">
+                        <i class="bi bi-clipboard-data-fill fs-4"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 h-100 bg-white border-start border-4 border-info">
+                <div class="card-body p-3 d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="text-muted small fw-semibold text-uppercase">Total System Stock</div>
+                        <div class="fs-3 fw-bold text-info mb-0">@totalSystemStock.ToString("N0")</div>
+                    </div>
+                    <div class="rounded-circle bg-info bg-opacity-10 text-info p-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                        <i class="bi bi-pc-display fs-4"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 h-100 bg-white border-start border-4 border-success">
+                <div class="card-body p-3 d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="text-muted small fw-semibold text-uppercase">Total Physical Stock</div>
+                        <div class="fs-3 fw-bold text-success mb-0">@totalPhysicalStock.ToString("N0")</div>
+                    </div>
+                    <div class="rounded-circle bg-success bg-opacity-10 text-success p-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                        <i class="bi bi-boxes fs-4"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 h-100 bg-white border-start border-4 @(totalDiscrepancy == 0 ? "border-success" : (totalDiscrepancy < 0 ? "border-danger" : "border-warning"))">
+                <div class="card-body p-3 d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="text-muted small fw-semibold text-uppercase">Total Variance / Discrepancy</div>
+                        <div class="fs-3 fw-bold @(totalDiscrepancy == 0 ? "text-success" : (totalDiscrepancy < 0 ? "text-danger" : "text-warning")) mb-0">
+                            @(totalDiscrepancy > 0 ? "+" + totalDiscrepancy.ToString("N0") : totalDiscrepancy.ToString("N0"))
+                        </div>
+                    </div>
+                    <div class="rounded-circle p-3 d-flex align-items-center justify-content-center @(totalDiscrepancy == 0 ? "bg-success bg-opacity-10 text-success" : (totalDiscrepancy < 0 ? "bg-danger bg-opacity-10 text-danger" : "bg-warning bg-opacity-10 text-warning"))" style="width: 48px; height: 48px;">
+                        <i class="bi bi-arrow-left-right fs-4"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Data Table Card -->
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-white">
+        <div class="card-header bg-white py-3 px-4 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom-0 gap-3">
+            <div>
+                <h5 class="fw-bold mb-0 text-dark">
+                    <i class="bi bi-list-stars me-2 text-indigo" style="color: #6366f1;"></i> Stock Verification Directory
+                </h5>
+                <small class="text-muted">Showing all recorded physical vs system stock audit records</small>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <div class="input-group input-group-sm rounded-pill overflow-hidden border" style="max-width: 280px;">
+                    <span class="input-group-text bg-white border-0 pe-1"><i class="bi bi-search text-muted"></i></span>
+                    <input type="text" id="searchInput" class="form-control border-0 shadow-none ps-2" placeholder="Search audits...">
+                </div>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" id="stockVerificationTable">
+                <thead class="bg-light text-muted uppercase fs-7 border-top">
+                    <tr>
+                        <th class="ps-4 py-3">Audit ID</th>
+                        <th class="py-3">Raw Material</th>
+                        <th class="py-3 text-end">System Stock</th>
+                        <th class="py-3 text-end">Physical Stock</th>
+                        <th class="py-3 text-end">Difference (Variance)</th>
+                        <th class="py-3">Verification Date</th>
+                        <th class="py-3">Verified By</th>
+                        <th class="py-3">Status</th>
+                        <th class="pe-4 py-3">Remarks</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    @if (verifications.Any())
+                    {
+                        @foreach (var item in verifications)
+                        {
+                            var diffClass = item.DifferenceStock == 0 ? "bg-success bg-opacity-10 text-success border-success" 
+                                           : (item.DifferenceStock < 0 ? "bg-danger bg-opacity-10 text-danger border-danger" 
+                                           : "bg-warning bg-opacity-10 text-dark border-warning");
+                            
+                            var diffIcon = item.DifferenceStock == 0 ? "bi-check-circle" 
+                                          : (item.DifferenceStock < 0 ? "bi-arrow-down-circle-fill" 
+                                          : "bi-arrow-up-circle-fill");
+
+                            <tr>
+                                <td class="ps-4 py-3 fw-bold text-dark">
+                                    <span class="badge bg-light text-dark border px-2 py-1 rounded-3">
+                                        #SV-@item.VerificationId.ToString("D4")
+                                    </span>
+                                </td>
+                                <td class="py-3">
+                                    <div class="d-flex align-items-center">
+                                        <div class="rounded-circle p-2 me-2 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; background-color: rgba(99, 102, 241, 0.1); color: #6366f1;">
+                                            <i class="bi bi-boxes fs-6"></i>
+                                        </div>
+                                        <div>
+                                            <span class="fw-semibold text-dark d-block">@(string.IsNullOrEmpty(item.MaterialName) ? $"Material #{item.MaterialId}" : item.MaterialName)</span>
+                                            <small class="text-muted">Material ID: @item.MaterialId</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="py-3 text-end fw-bold text-muted">
+                                    <span class="fs-6">@item.SystemStock.ToString("N0")</span>
+                                    <small class="text-muted d-block fs-7">Units</small>
+                                </td>
+                                <td class="py-3 text-end fw-bold text-dark">
+                                    <span class="fs-6 text-primary">@item.PhysicalStock.ToString("N0")</span>
+                                    <small class="text-muted d-block fs-7">Units</small>
+                                </td>
+                                <td class="py-3 text-end">
+                                    <span class="badge @diffClass border px-3 py-1 rounded-pill fs-7 fw-bold">
+                                        <i class="bi @diffIcon me-1"></i>
+                                        @(item.DifferenceStock > 0 ? "+" + item.DifferenceStock.ToString("N0") : item.DifferenceStock.ToString("N0"))
+                                    </span>
+                                </td>
+                                <td class="py-3">
+                                    <span class="fw-semibold text-dark d-block">@item.VerificationDate.ToString("yyyy-MM-dd")</span>
+                                    <small class="text-muted">@item.VerificationDate.ToString("HH:mm")</small>
+                                </td>
+                                <td class="py-3">
+                                    <span class="badge bg-light text-dark border px-2 py-1 rounded-pill fw-normal">
+                                        <i class="bi bi-person me-1 text-primary"></i> @(string.IsNullOrEmpty(item.VerifiedBy) ? "Production Manager" : item.VerifiedBy)
+                                    </span>
+                                </td>
+                                <td class="py-3">
+                                    <span class="badge @getStatusBadgeClass(item.Status) rounded-pill px-3 py-1 fs-7 fw-semibold">
+                                        @(string.IsNullOrEmpty(item.Status) ? "Verified" : item.Status)
+                                    </span>
+                                </td>
+                                <td class="pe-4 py-3 text-muted fs-7 max-w-xs text-truncate" style="max-width: 200px;">
+                                    @(string.IsNullOrEmpty(item.Remarks) ? "-" : item.Remarks)
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="9" class="text-center py-5 text-muted">
+                                <div class="py-4">
+                                    <i class="bi bi-clipboard-check fs-1 text-muted opacity-50 d-block mb-3"></i>
+                                    <h5>No Stock Verifications Found</h5>
+                                    <p class="mb-3">No physical stock count audits have been conducted yet.</p>
+                                    <a asp-action="Create" class="btn btn-primary rounded-pill px-4">
+                                        <i class="bi bi-plus-circle me-1"></i> Perform Stock Audit
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const searchInput = document.getElementById('searchInput');
+            const table = document.getElementById('stockVerificationTable');
+
+            if (searchInput && table) {
+                searchInput.addEventListener('keyup', function () {
+                    const filter = searchInput.value.toLowerCase();
+                    const rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+
+                    for (let i = 0; i < rows.length; i++) {
+                        const rowText = rows[i].textContent.toLowerCase();
+                        if (rowText.includes(filter)) {
+                            rows[i].style.display = '';
+                        } else {
+                            rows[i].style.display = 'none';
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+}

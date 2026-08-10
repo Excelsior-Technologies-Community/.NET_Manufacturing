@@ -1,0 +1,185 @@
+@model Manufacturing.Models.StockVerification
+
+@{
+    ViewData["Title"] = "New Physical Stock Verification";
+
+    var materialList = ViewBag.MaterialList as List<SelectListItem> ?? new List<SelectListItem>();
+
+    var defaultDate = Model?.VerificationDate != default && Model?.VerificationDate != null 
+        ? Model.VerificationDate.ToString("yyyy-MM-ddTHH:mm") 
+        : DateTime.Now.ToString("yyyy-MM-ddTHH:mm");
+}
+
+<div class="container-fluid px-3 py-3">
+    <!-- Header Banner -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 p-4 rounded-4 shadow-sm text-white" style="background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #4f46e5 100%);">
+        <div class="mb-3 mb-md-0">
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="badge bg-indigo px-3 py-1 rounded-pill text-uppercase fs-7 fw-bold" style="background-color: #6366f1;">Stock Verification</span>
+                <span class="badge bg-outline-light text-white-50 border border-white-50 px-2 py-1 rounded-pill fs-7">Production Manager Portal</span>
+            </div>
+            <h2 class="fw-bold mb-1 d-flex align-items-center">
+                <i class="bi bi-plus-circle-fill text-indigo-300 me-2 fs-2"></i> Perform Physical Stock Audit
+            </h2>
+            <p class="text-slate-300 mb-0 opacity-75">Record actual physical raw material count and compare against system inventory records</p>
+        </div>
+        <div>
+            <a asp-action="Index" class="btn btn-outline-light rounded-pill px-4 py-2 shadow-sm">
+                <i class="bi bi-arrow-left me-1"></i> Back to Verifications List
+            </a>
+        </div>
+    </div>
+
+    <!-- Form Card -->
+    <div class="row justify-content-center">
+        <div class="col-lg-10 col-xl-8">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-white">
+                <div class="card-header bg-white py-3 px-4 border-bottom">
+                    <h5 class="fw-bold mb-0 text-dark">
+                        <i class="bi bi-file-earmark-plus me-2 text-indigo" style="color: #6366f1;"></i> Stock Audit Entry Form
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <form asp-action="Create" method="post">
+                        <input type="hidden" name="MaterialName" value="N/A" />
+                        <div asp-validation-summary="All" class="alert alert-danger rounded-3 mb-4" role="alert"></div>
+
+                        <!-- Raw Material Selection -->
+                        <div class="mb-3">
+                            <label asp-for="MaterialId" class="form-label fw-semibold text-dark">
+                                <i class="bi bi-boxes text-indigo me-1" style="color: #6366f1;"></i> Raw Material <span class="text-danger">*</span>
+                            </label>
+                            <select asp-for="MaterialId" class="form-select rounded-3 py-2" asp-items="materialList" required>
+                                <option value="">-- Select Raw Material to Audit --</option>
+                            </select>
+                            <span asp-validation-for="MaterialId" class="text-danger small"></span>
+                        </div>
+
+                        <!-- Stock Quantities Row -->
+                        <div class="row g-3 mb-3">
+                            <!-- System Stock -->
+                            <div class="col-md-6">
+                                <label asp-for="SystemStock" class="form-label fw-semibold text-dark">
+                                    <i class="bi bi-pc-display text-info me-1"></i> System Recorded Stock <span class="text-danger">*</span>
+                                </label>
+                                <input asp-for="SystemStock" id="systemStock" type="number" min="0" class="form-control rounded-3 py-2" placeholder="e.g. 500" required />
+                                <span asp-validation-for="SystemStock" class="text-danger small"></span>
+                            </div>
+
+                            <!-- Physical Stock -->
+                            <div class="col-md-6">
+                                <label asp-for="PhysicalStock" class="form-label fw-semibold text-dark">
+                                    <i class="bi bi-box-seam-fill text-success me-1"></i> Physical Audited Stock <span class="text-danger">*</span>
+                                </label>
+                                <input asp-for="PhysicalStock" id="physicalStock" type="number" min="0" class="form-control rounded-3 py-2" placeholder="e.g. 480" required />
+                                <span asp-validation-for="PhysicalStock" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <!-- Live Calculated Variance Indicator -->
+                        <div class="p-3 mb-4 rounded-3 border bg-light" id="varianceCard">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <small class="text-muted text-uppercase fw-semibold d-block fs-7">Calculated Variance (Physical - System)</small>
+                                    <span id="varianceText" class="fs-5 fw-bold text-muted">0 Units</span>
+                                </div>
+                                <div>
+                                    <span id="varianceBadge" class="badge bg-secondary rounded-pill px-3 py-2 fs-7">No Difference</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <!-- Verification Date -->
+                            <div class="col-md-6">
+                                <label asp-for="VerificationDate" class="form-label fw-semibold text-dark">
+                                    <i class="bi bi-calendar-event text-primary me-1"></i> Verification Date & Time <span class="text-danger">*</span>
+                                </label>
+                                <input asp-for="VerificationDate" type="datetime-local" value="@defaultDate" class="form-control rounded-3 py-2" required />
+                                <span asp-validation-for="VerificationDate" class="text-danger small"></span>
+                            </div>
+
+                            <!-- Verified By -->
+                            <div class="col-md-6">
+                                <label asp-for="VerifiedBy" class="form-label fw-semibold text-dark">
+                                    <i class="bi bi-person-badge text-indigo me-1" style="color: #6366f1;"></i> Verified By (Auditor / Manager)
+                                </label>
+                                <input asp-for="VerifiedBy" type="text" class="form-control rounded-3 py-2" value="Production Manager" placeholder="e.g. Quality Auditor / Manager Name" />
+                                <span asp-validation-for="VerifiedBy" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <!-- Status -->
+                        <div class="mb-3">
+                            <label asp-for="Status" class="form-label fw-semibold text-dark">
+                                <i class="bi bi-tag text-warning me-1"></i> Audit Status
+                            </label>
+                            <select asp-for="Status" class="form-select rounded-3 py-2">
+                                <option value="Verified" selected>Verified</option>
+                                <option value="Pending">Pending Review</option>
+                                <option value="Discrepancy">Discrepancy Found</option>
+                                <option value="Adjusted">Inventory Adjusted</option>
+                            </select>
+                            <span asp-validation-for="Status" class="text-danger small"></span>
+                        </div>
+
+                        <!-- Remarks -->
+                        <div class="mb-4">
+                            <label asp-for="Remarks" class="form-label fw-semibold text-dark">
+                                <i class="bi bi-card-text text-secondary me-1"></i> Remarks / Discrepancy Reason
+                            </label>
+                            <textarea asp-for="Remarks" rows="3" class="form-control rounded-3" placeholder="Add audit notes (e.g. 20 units damaged during transport, batch count match)..."></textarea>
+                            <span asp-validation-for="Remarks" class="text-danger small"></span>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="d-flex justify-content-end gap-2 border-top pt-3">
+                            <a asp-action="Index" class="btn btn-light rounded-pill px-4">Cancel</a>
+                            <button type="submit" class="btn btn-primary rounded-pill px-4 shadow-sm" style="background-color: #4f46e5; border-color: #4f46e5;">
+                                <i class="bi bi-check-circle-fill me-1"></i> Save Stock Verification
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const systemInput = document.getElementById('systemStock');
+            const physicalInput = document.getElementById('physicalStock');
+            const varianceText = document.getElementById('varianceText');
+            const varianceBadge = document.getElementById('varianceBadge');
+
+            function updateVariance() {
+                const sys = parseInt(systemInput.value) || 0;
+                const phys = parseInt(physicalInput.value) || 0;
+                const diff = phys - sys;
+
+                if (diff === 0) {
+                    varianceText.textContent = '0 Units (Exact Match)';
+                    varianceText.className = 'fs-5 fw-bold text-success';
+                    varianceBadge.textContent = 'Matched';
+                    varianceBadge.className = 'badge bg-success rounded-pill px-3 py-2 fs-7';
+                } else if (diff < 0) {
+                    varianceText.textContent = diff + ' Units (Shortage)';
+                    varianceText.className = 'fs-5 fw-bold text-danger';
+                    varianceBadge.textContent = 'Shortage / Loss';
+                    varianceBadge.className = 'badge bg-danger rounded-pill px-3 py-2 fs-7';
+                } else {
+                    varianceText.textContent = '+' + diff + ' Units (Surplus)';
+                    varianceText.className = 'fs-5 fw-bold text-warning';
+                    varianceBadge.textContent = 'Surplus / Excess';
+                    varianceBadge.className = 'badge bg-warning text-dark rounded-pill px-3 py-2 fs-7';
+                }
+            }
+
+            systemInput.addEventListener('input', updateVariance);
+            physicalInput.addEventListener('input', updateVariance);
+        });
+    </script>
+}
