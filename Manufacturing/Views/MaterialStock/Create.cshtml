@@ -112,11 +112,34 @@
 @section Scripts {
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            const materialSelect = document.getElementById('MaterialId');
             const currentInput = document.getElementById('currentStock');
             const addedInput = document.getElementById('addedStock');
             const updatedInput = document.getElementById('updatedStock');
             const summaryText = document.getElementById('summaryText');
             const summaryBadge = document.getElementById('summaryBadge');
+
+            function fetchSystemStock(matId) {
+                if (!matId) return;
+                fetch(`/MaterialStock/GetSystemStock?materialId=${matId}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data && data.stock !== undefined) {
+                            currentInput.value = data.stock;
+                            updateCalc();
+                        }
+                    })
+                    .catch(err => console.error('Error fetching system stock:', err));
+            }
+
+            if (materialSelect) {
+                materialSelect.addEventListener('change', function () {
+                    fetchSystemStock(this.value);
+                });
+                if (materialSelect.value) {
+                    fetchSystemStock(materialSelect.value);
+                }
+            }
 
             function updateCalc() {
                 const current = parseInt(currentInput.value) || 0;

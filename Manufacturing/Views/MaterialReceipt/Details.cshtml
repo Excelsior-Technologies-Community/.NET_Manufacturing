@@ -1,0 +1,176 @@
+@model Manufacturing.Models.MaterialReceipt
+
+@{
+    ViewData["Title"] = "Goods Receipt Voucher (GRN) Details - Inventory Manager";
+    var receipt = Model ?? new Manufacturing.Models.MaterialReceipt();
+
+    string getStatusBadgeClass(string? status)
+    {
+        switch (status?.Trim().ToLower())
+        {
+            case "verified":
+            case "passed":
+            case "approved":
+                return "bg-success text-white";
+            case "pending":
+            case "received":
+                return "bg-warning text-dark";
+            case "rejected":
+            case "failed":
+                return "bg-danger text-white";
+            default:
+                return "bg-info text-white";
+        }
+    }
+}
+
+<div class="container-fluid px-4 py-4">
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-8">
+            <!-- Navigation Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4 print-hide">
+                <div>
+                    <div class="d-flex align-items-center gap-2 mb-1">
+                        <span class="badge bg-warning text-dark px-3 py-1 rounded-pill text-uppercase fs-7 fw-bold">Inventory Manager Portal</span>
+                        <span class="badge bg-info text-white px-3 py-1 rounded-pill fs-7">Official GRN Document</span>
+                    </div>
+                    <h3 class="fw-bold mb-0 text-dark">
+                        <i class="bi bi-file-earmark-check text-success me-2"></i> Goods Receipt Voucher #@receipt.ReceiptId
+                    </h3>
+                </div>
+                <div class="d-flex gap-2">
+                    <button onclick="window.print()" class="btn btn-outline-dark rounded-pill px-3">
+                        <i class="bi bi-printer-fill me-1"></i> Print Voucher
+                    </button>
+                    <a asp-action="Edit" asp-route-id="@receipt.ReceiptId" class="btn btn-warning rounded-pill px-3">
+                        <i class="bi bi-pencil-square me-1"></i> Edit
+                    </a>
+                    <a asp-action="Index" class="btn btn-outline-secondary rounded-pill px-3">
+                        <i class="bi bi-arrow-left me-1"></i> Back to List
+                    </a>
+                </div>
+            </div>
+
+            <!-- Official Goods Receipt Voucher (GRN) Card -->
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden bg-white print-card">
+                <!-- Voucher Top Header -->
+                <div class="card-header bg-dark text-white p-4 p-md-5">
+                    <div class="row align-items-center">
+                        <div class="col-8">
+                            <div class="text-warning text-uppercase fw-bold letter-spacing-1 small mb-1">Manufacturing Enterprise Inventory Audit</div>
+                            <h2 class="fw-bold mb-0">GOODS RECEIPT NOTE (GRN)</h2>
+                            <p class="mb-0 text-white-50 small">Voucher Reference: @(string.IsNullOrEmpty(receipt.ReferenceNo) ? "GRN-" + receipt.ReceiptId : receipt.ReferenceNo)</p>
+                        </div>
+                        <div class="col-4 text-end">
+                            <span class="badge rounded-pill fs-6 px-3 py-2 @getStatusBadgeClass(receipt.Status)">
+                                <i class="bi bi-shield-check me-1"></i>@(string.IsNullOrEmpty(receipt.Status) ? "Received" : receipt.Status)
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Voucher Body -->
+                <div class="card-body p-4 p-md-5">
+                    <div class="row g-4 mb-4 pb-4 border-bottom">
+                        <div class="col-6 col-md-3">
+                            <span class="text-muted small text-uppercase fw-bold d-block mb-1">Receipt ID</span>
+                            <span class="fs-5 fw-bold text-success">#@receipt.ReceiptId</span>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <span class="text-muted small text-uppercase fw-bold d-block mb-1">Receive Date</span>
+                            <span class="fs-6 fw-semibold text-dark">@receipt.ReceiveDate.ToString("yyyy-MM-dd")</span>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <span class="text-muted small text-uppercase fw-bold d-block mb-1">Reference / PO</span>
+                            <span class="fs-6 fw-semibold text-dark">@(string.IsNullOrEmpty(receipt.ReferenceNo) ? "N/A" : receipt.ReferenceNo)</span>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <span class="text-muted small text-uppercase fw-bold d-block mb-1">Logged Date</span>
+                            <span class="fs-6 fw-semibold text-dark">@receipt.CreatedDate.ToString("yyyy-MM-dd")</span>
+                        </div>
+                    </div>
+
+                    <!-- Material & Supplier Information Grid -->
+                    <div class="row g-4 mb-4">
+                        <!-- Material Details -->
+                        <div class="col-12 col-md-6">
+                            <div class="p-3 bg-light rounded-4 h-100 border">
+                                <h6 class="fw-bold text-dark mb-3 border-bottom pb-2">
+                                    <i class="bi bi-boxes text-success me-2"></i> Raw Material Information
+                                </h6>
+                                <div class="mb-2">
+                                    <span class="text-muted small">Material Name:</span>
+                                    <div class="fw-bold text-dark fs-6">@(string.IsNullOrEmpty(receipt.MaterialName) ? "Material #" + receipt.MaterialId : receipt.MaterialName)</div>
+                                </div>
+                                <div>
+                                    <span class="text-muted small">System Material ID:</span>
+                                    <div class="fw-semibold text-secondary">#@receipt.MaterialId</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Supplier & Delivery Details -->
+                        <div class="col-12 col-md-6">
+                            <div class="p-3 bg-light rounded-4 h-100 border">
+                                <h6 class="fw-bold text-dark mb-3 border-bottom pb-2">
+                                    <i class="bi bi-truck text-primary me-2"></i> Supplier & Officer Information
+                                </h6>
+                                <div class="mb-2">
+                                    <span class="text-muted small">Supplier Name:</span>
+                                    <div class="fw-bold text-dark fs-6">@(string.IsNullOrEmpty(receipt.SupplierName) ? "Standard Supplier" : receipt.SupplierName)</div>
+                                </div>
+                                <div>
+                                    <span class="text-muted small">Received & Verified By:</span>
+                                    <div class="fw-semibold text-success">
+                                        <i class="bi bi-person-badge me-1"></i>@(string.IsNullOrEmpty(receipt.ReceivedBy) ? "Robert Chen (Inventory Manager)" : receipt.ReceivedBy)
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Received Quantity Metric Box -->
+                    <div class="p-4 rounded-4 mb-4 text-center" style="background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border: 1px solid #bbf7d0;">
+                        <span class="text-uppercase fw-bold text-emerald-800 fs-7 tracking-wider d-block mb-1">Total Verified Quantity Received</span>
+                        <div class="display-5 fw-bold text-success mb-1">@receipt.ReceivedQuantity.ToString("N0") <small class="fs-4 text-muted">Units</small></div>
+                        <small class="text-success fw-medium"><i class="bi bi-check-circle-fill me-1"></i> Inbound Physical Inventory Verification Complete</small>
+                    </div>
+
+                    <!-- Remarks & Notes -->
+                    <div class="mb-4">
+                        <span class="text-muted small text-uppercase fw-bold d-block mb-1">Inspection & Quality Remarks</span>
+                        <div class="p-3 bg-light rounded-3 border text-dark font-monospace small">
+                            @(string.IsNullOrEmpty(receipt.Remarks) ? "No special remarks recorded for this material receipt." : receipt.Remarks)
+                        </div>
+                    </div>
+
+                    <!-- Signatures / Authorization Section -->
+                    <div class="row pt-4 mt-4 border-top text-center text-muted small">
+                        <div class="col-6">
+                            <div class="border-bottom pb-4 mb-2" style="border-style: dashed !important;"></div>
+                            <span>Store Officer Signature</span>
+                        </div>
+                        <div class="col-6">
+                            <div class="border-bottom pb-4 mb-2" style="border-style: dashed !important;"></div>
+                            <span class="fw-bold text-dark">Inventory Manager Verification</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer Audit Bar -->
+                <div class="card-footer bg-light border-top py-3 px-4 text-center text-muted small">
+                    Goods Receipt Note (GRN) Voucher #@receipt.ReceiptId | Generated on @DateTime.Now.ToString("yyyy-MM-dd HH:mm") | Confidential Inventory Record
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    @@media print {
+        .print-hide { display: none !important; }
+        body { background: #fff !important; }
+        .container-fluid { padding: 0 !important; }
+        .print-card { shadow: none !important; border: 1px solid #ddd !important; }
+    }
+</style>

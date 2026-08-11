@@ -273,23 +273,42 @@
     else if (Model.Role == "Inventory Manager")
     {
         <div class="card border-0 shadow-sm rounded-4 mb-4">
-            <div class="card-header bg-warning text-dark py-3 rounded-top-4">
-                <h5 class="fw-bold mb-0"><i class="bi bi-boxes me-2"></i>Inventory & Stock Control Hub</h5>
+            <div class="card-header text-white py-3 rounded-top-4" style="background: linear-gradient(135deg, #064e3b, #059669);">
+                <h5 class="fw-bold mb-0"><i class="bi bi-boxes me-2"></i>Inventory & Stock Control Hub (Manager Portal)</h5>
             </div>
             <div class="card-body p-4">
-                <div class="row g-3">
+                <div class="row g-3 mb-4">
                     <div class="col-md-6">
                         <div class="p-3 bg-light rounded-3 border">
-                            <h6 class="fw-bold text-dark mb-1"><i class="bi bi-shop me-1"></i>Store Managers Registered</h6>
-                            <h3 class="fw-bold text-warning mb-0">@Model.Metric1Count</h3>
+                            <h6 class="fw-bold text-dark mb-1"><i class="bi bi-shop me-1 text-warning"></i>Store Managers Registered</h6>
+                            <h3 class="fw-bold text-success mb-0">@Model.Metric1Count</h3>
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="p-3 bg-light rounded-3 border">
-                            <h6 class="fw-bold text-dark mb-1"><i class="bi bi-box-seam me-1"></i>Inventory Personnel Count</h6>
+                            <h6 class="fw-bold text-dark mb-1"><i class="bi bi-box-seam me-1 text-primary"></i>Inventory Personnel Count</h6>
                             <h3 class="fw-bold text-dark mb-0">@Model.Metric2Count</h3>
                         </div>
                     </div>
+                </div>
+
+                <h6 class="fw-bold text-dark mb-3"><i class="bi bi-lightning-charge text-warning me-1"></i>Quick Actions & Management Tools</h6>
+                <div class="d-flex flex-wrap gap-2">
+                    <a asp-controller="MaterialReceipt" asp-action="Index" class="btn btn-success rounded-pill px-4 py-2 fw-semibold">
+                        <i class="bi bi-box-arrow-in-down me-1"></i> Material Receipts (GRN) Log
+                    </a>
+                    <a asp-controller="MaterialDispatch" asp-action="Index" class="btn btn-outline-success rounded-pill px-4 py-2 fw-semibold">
+                        <i class="bi bi-truck me-1"></i> Outward Dispatches Log
+                    </a>
+                    <a asp-controller="RawMaterial" asp-action="Index" class="btn btn-outline-warning text-dark rounded-pill px-4 py-2 fw-semibold">
+                        <i class="bi bi-boxes me-1"></i> Raw Materials List
+                    </a>
+                    <a asp-controller="MaterialStock" asp-action="Index" class="btn btn-outline-primary rounded-pill px-4 py-2 fw-semibold">
+                        <i class="bi bi-box-seam-fill me-1"></i> Material Stock Inventory
+                    </a>
+                    <a asp-controller="StockVerification" asp-action="Index" class="btn btn-outline-indigo rounded-pill px-4 py-2 fw-semibold" style="color: #6366f1; border-color: #6366f1;">
+                        <i class="bi bi-clipboard-check-fill me-1"></i> Audit Stock Verification
+                    </a>
                 </div>
             </div>
         </div>

@@ -1,4 +1,4 @@
-﻿using Manufacturing.Models;
+using Manufacturing.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Data.SqlClient;
@@ -249,6 +249,57 @@ namespace Manufacturing.Controllers
             TempData["Success"] = "Material Stock Deleted Successfully.";
 
             return RedirectToAction("Index");
+        }
+
+        [HttpGet]
+        public JsonResult GetSystemStock(int materialId)
+        {
+            int currentStock = 0;
+
+            using (SqlConnection con = new SqlConnection(cs))
+            {
+                con.Open();
+
+                // 1. Fetch latest stock from MaterialStock table (UpdatedStock or CurrentStock)
+                string materialStockQuery = @"
+                    SELECT TOP 1 
+                        CASE 
+                            WHEN ISNULL(UpdatedStock, 0) > 0 THEN UpdatedStock
+                            WHEN ISNULL(CurrentStock, 0) > 0 THEN CurrentStock
+                            ELSE ISNULL(UpdatedStock, 0)
+                        END AS StockQty
+                    FROM MaterialStock 
+                    WHERE MaterialId = @MaterialId 
+                    ORDER BY StockId DESC";
+
+                SqlCommand cmd1 = new SqlCommand(materialStockQuery, con);
+                cmd1.Parameters.AddWithValue("@MaterialId", materialId);
+
+                object res1 = cmd1.ExecuteScalar();
+
+                if (res1 != null && res1 != DBNull.Value)
+                {
+                    currentStock = Convert.ToInt32(res1);
+                }
+                else
+                {
+                    // 2. Fallback to RawMaterials table if no entry exists in MaterialStock table
+                    string rawMatQuery = @"SELECT ISNULL(CurrentStock, 0) FROM RawMaterials WHERE MaterialId = @MaterialId";
+                    SqlCommand cmd2 = new SqlCommand(rawMatQuery, con);
+                    cmd2.Parameters.AddWithValue("@MaterialId", materialId);
+
+                    object res2 = cmd2.ExecuteScalar();
+
+                    if (res2 != null && res2 != DBNull.Value)
+                    {
+                        currentStock = Convert.ToInt32(res2);
+                    }
+                }
+
+                con.Close();
+            }
+
+            return Json(new { success = true, stock = currentStock });
         }
     }
 }

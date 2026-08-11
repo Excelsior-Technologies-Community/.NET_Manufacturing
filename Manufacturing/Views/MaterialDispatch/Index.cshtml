@@ -1,0 +1,468 @@
+@model List<Manufacturing.Models.MaterialDispatch>
+
+@{
+    ViewData["Title"] = "Material Dispatches - Inventory Manager Portal";
+
+    var dispatches = Model ?? new List<Manufacturing.Models.MaterialDispatch>();
+
+    int totalDispatches = dispatches.Count;
+    long totalQtyDispatched = dispatches.Sum(d => (long)d.DispatchQuantity);
+    int completedCount = dispatches.Count(d => string.Equals(d.Status, "Dispatched", StringComparison.OrdinalIgnoreCase) ||
+                                              string.Equals(d.Status, "Delivered", StringComparison.OrdinalIgnoreCase) ||
+                                              string.Equals(d.Status, "Completed", StringComparison.OrdinalIgnoreCase));
+    int pendingCount = dispatches.Count(d => string.Equals(d.Status, "Pending", StringComparison.OrdinalIgnoreCase) ||
+                                             string.Equals(d.Status, "In Transit", StringComparison.OrdinalIgnoreCase) ||
+                                             string.Equals(d.Status, "Processing", StringComparison.OrdinalIgnoreCase));
+    int cancelledCount = dispatches.Count(d => string.Equals(d.Status, "Cancelled", StringComparison.OrdinalIgnoreCase) ||
+                                               string.Equals(d.Status, "Rejected", StringComparison.OrdinalIgnoreCase));
+
+    string getStatusBadgeClass(string? status)
+    {
+        switch (status?.Trim().ToLower())
+        {
+            case "dispatched":
+            case "delivered":
+            case "completed":
+            case "approved":
+                return "bg-success text-white";
+            case "in transit":
+            case "shipping":
+                return "bg-info text-white";
+            case "pending":
+            case "processing":
+            case "requested":
+                return "bg-warning text-dark";
+            case "cancelled":
+            case "rejected":
+                return "bg-danger text-white";
+            default:
+                return "bg-secondary text-white";
+        }
+    }
+}
+
+<div class="container-fluid px-4 py-4">
+    <!-- TempData Alerts -->
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show rounded-4 shadow-sm border-0 mb-4" role="alert">
+            <i class="bi bi-check-circle-fill me-2 fs-5 align-middle"></i>
+            <strong>Success!</strong> @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- Top Navigation Header Banner -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 p-4 rounded-4 shadow text-white" style="background: linear-gradient(135deg, #064e3b 0%, #047857 50%, #059669 100%);">
+        <div class="mb-3 mb-md-0">
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="badge bg-warning text-dark px-3 py-1 rounded-pill text-uppercase fs-7 fw-bold">Inventory Manager Portal</span>
+                <span class="badge bg-white bg-opacity-25 text-white px-3 py-1 rounded-pill fs-7">Outward Material Control</span>
+            </div>
+            <h2 class="fw-bold mb-1 d-flex align-items-center">
+                <i class="bi bi-truck text-warning me-2 fs-2"></i> Material Dispatch Management
+            </h2>
+            <p class="text-emerald-100 mb-0 opacity-85">
+                Inventory Manager Control Hub: Monitor, filter, and audit outbound raw material dispatches to production lines & external destinations.
+            </p>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+            <button type="button" onclick="exportDispatchCSV()" class="btn btn-light rounded-pill px-4 py-2 shadow-sm fw-semibold text-emerald-900">
+                <i class="bi bi-file-earmark-spreadsheet me-1 text-success"></i> Export CSV
+            </button>
+            <a asp-controller="Account" asp-action="Dashboard" class="btn btn-outline-light rounded-pill px-3 py-2">
+                <i class="bi bi-speedometer2 me-1"></i> Inventory Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- Inventory Manager KPI Cards Row -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 h-100 bg-white border-start border-4 border-success">
+                <div class="card-body p-3 d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="text-muted small fw-semibold text-uppercase">Total Dispatches</div>
+                        <div class="fs-3 fw-bold text-success mb-0" id="statTotalDispatches">@totalDispatches</div>
+                    </div>
+                    <div class="rounded-circle bg-success bg-opacity-10 text-success p-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                        <i class="bi bi-truck fs-4"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 h-100 bg-white border-start border-4 border-primary">
+                <div class="card-body p-3 d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="text-muted small fw-semibold text-uppercase">Total Qty Dispatched</div>
+                        <div class="fs-3 fw-bold text-primary mb-0" id="statTotalQty">@totalQtyDispatched.ToString("N0")</div>
+                    </div>
+                    <div class="rounded-circle bg-primary bg-opacity-10 text-primary p-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                        <i class="bi bi-boxes fs-4"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 h-100 bg-white border-start border-4 border-info">
+                <div class="card-body p-3 d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="text-muted small fw-semibold text-uppercase">Completed / Delivered</div>
+                        <div class="fs-3 fw-bold text-info mb-0" id="statCompleted">@completedCount</div>
+                    </div>
+                    <div class="rounded-circle bg-info bg-opacity-10 text-info p-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                        <i class="bi bi-check2-circle fs-4"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 h-100 bg-white border-start border-4 border-warning">
+                <div class="card-body p-3 d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="text-muted small fw-semibold text-uppercase">Pending / In Transit</div>
+                        <div class="fs-3 fw-bold text-warning mb-0" id="statPending">@pendingCount</div>
+                    </div>
+                    <div class="rounded-circle bg-warning bg-opacity-10 text-warning p-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                        <i class="bi bi-hourglass-split fs-4"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Inventory Manager Control Panel & Table Card -->
+    <div class="card border-0 shadow-sm rounded-4 bg-white overflow-hidden">
+        <div class="card-header bg-white py-3 px-4 border-bottom d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+            <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-list-columns-reverse text-success fs-5"></i>
+                <h5 class="fw-bold text-dark mb-0">Outward Dispatch Ledger</h5>
+                <span class="badge bg-light text-dark rounded-pill border ms-1" id="visibleRowCount">@totalDispatches Record(s)</span>
+            </div>
+
+            <!-- Toolbar Controls -->
+            <div class="d-flex flex-wrap align-items-center gap-2">
+                <!-- Search Box -->
+                <div class="input-group input-group-sm rounded-pill overflow-hidden border" style="max-width: 280px;">
+                    <span class="input-group-text bg-white border-0 ps-3">
+                        <i class="bi bi-search text-muted"></i>
+                    </span>
+                    <input type="text" id="dispatchSearchInput" class="form-control border-0 shadow-none ps-1" placeholder="Search dispatches..." onkeyup="filterDispatches()" />
+                </div>
+
+                <!-- Status Filter -->
+                <select id="statusFilterSelect" class="form-select form-select-sm rounded-pill border px-3" style="width: auto;" onchange="filterDispatches()">
+                    <option value="">All Statuses</option>
+                    <option value="Dispatched">Dispatched</option>
+                    <option value="Delivered">Delivered</option>
+                    <option value="Completed">Completed</option>
+                    <option value="In Transit">In Transit</option>
+                    <option value="Pending">Pending</option>
+                    <option value="Cancelled">Cancelled</option>
+                </select>
+
+                <button class="btn btn-sm btn-outline-secondary rounded-pill px-3" onclick="resetFilters()">
+                    <i class="bi bi-arrow-counterclockwise me-1"></i> Reset
+                </button>
+            </div>
+        </div>
+
+        <div class="card-body p-0">
+            @if (dispatches.Count == 0)
+            {
+                <div class="text-center py-5">
+                    <div class="mb-3">
+                        <i class="bi bi-inbox text-muted display-4"></i>
+                    </div>
+                    <h5 class="fw-bold text-dark">No Dispatch Records Found</h5>
+                    <p class="text-muted small">There are currently no raw material dispatches logged in the system.</p>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0" id="dispatchTable">
+                        <thead class="bg-light text-muted small text-uppercase fw-semibold border-bottom">
+                            <tr>
+                                <th class="ps-4 py-3">Dispatch ID</th>
+                                <th class="py-3">Raw Material</th>
+                                <th class="py-3">Production Order</th>
+                                <th class="py-3 text-end">Dispatch Qty</th>
+                                <th class="py-3">Dispatch Date</th>
+                                <th class="py-3">Destination</th>
+                                <th class="py-3">Dispatched By</th>
+                                <th class="py-3">Status</th>
+                                <th class="pe-4 py-3 text-end">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in dispatches)
+                            {
+                                var statusClass = getStatusBadgeClass(item.Status);
+                                var dispatchedByText = string.IsNullOrEmpty(item.DispatchedBy) ? "Inventory Manager" : item.DispatchedBy;
+                                var orderNoText = string.IsNullOrEmpty(item.OrderNo) ? (item.ProductionOrderId.HasValue ? $"PO-#{item.ProductionOrderId}" : "N/A") : item.OrderNo;
+                                var destinationText = string.IsNullOrEmpty(item.Destination) ? "Main Warehouse" : item.Destination;
+
+                                <tr class="dispatch-row"
+                                    data-id="@item.DispatchId"
+                                    data-material="@item.MaterialName"
+                                    data-order="@orderNoText"
+                                    data-qty="@item.DispatchQuantity"
+                                    data-date="@item.DispatchDate.ToString("yyyy-MM-dd HH:mm")"
+                                    data-by="@dispatchedByText"
+                                    data-destination="@destinationText"
+                                    data-status="@(item.Status ?? "Dispatched")"
+                                    data-remarks="@(item.Remarks ?? "")"
+                                    data-search="@item.DispatchId @item.MaterialName @orderNoText @dispatchedByText @destinationText @item.Status @item.Remarks">
+                                    
+                                    <td class="ps-4 py-3 fw-bold text-success">
+                                        <i class="bi bi-hash text-muted me-1"></i>DISP-@item.DispatchId.ToString("D4")
+                                    </td>
+                                    
+                                    <td class="py-3">
+                                        <div class="fw-bold text-dark">
+                                            <i class="bi bi-box-seam me-1 text-warning"></i>@(string.IsNullOrEmpty(item.MaterialName) ? $"Material #{item.MaterialId}" : item.MaterialName)
+                                        </div>
+                                        <small class="text-muted">ID: #@item.MaterialId</small>
+                                    </td>
+
+                                    <td class="py-3">
+                                        @if (!string.IsNullOrEmpty(item.OrderNo))
+                                        {
+                                            <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-2 py-1 rounded-pill fw-medium">
+                                                <i class="bi bi-gear-wide me-1"></i>@item.OrderNo
+                                            </span>
+                                        }
+                                        else if (item.ProductionOrderId.HasValue)
+                                        {
+                                            <span class="badge bg-light text-dark border px-2 py-1 rounded-pill">
+                                                PO-#@item.ProductionOrderId
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted small">N/A</span>
+                                        }
+                                    </td>
+
+                                    <td class="py-3 text-end fw-bold text-dark fs-6">
+                                        @item.DispatchQuantity.ToString("N0")
+                                    </td>
+
+                                    <td class="py-3">
+                                        <div class="small fw-semibold text-dark">@item.DispatchDate.ToString("MMM dd, yyyy")</div>
+                                        <small class="text-muted">@item.DispatchDate.ToString("hh:mm tt")</small>
+                                    </td>
+
+                                    <td class="py-3">
+                                        <span class="small fw-medium text-dark">
+                                            <i class="bi bi-geo-alt me-1 text-danger"></i>@destinationText
+                                        </span>
+                                    </td>
+
+                                    <td class="py-3">
+                                        <span class="small text-dark">
+                                            <i class="bi bi-person-circle me-1 text-success"></i>@dispatchedByText
+                                        </span>
+                                    </td>
+
+                                    <td class="py-3">
+                                        <span class="badge @statusClass px-3 py-1 rounded-pill fw-semibold small">
+                                            @(string.IsNullOrEmpty(item.Status) ? "Dispatched" : item.Status)
+                                        </span>
+                                    </td>
+
+                                    <td class="pe-4 py-3 text-end">
+                                        <button type="button" 
+                                                class="btn btn-sm btn-outline-success rounded-pill px-3"
+                                                onclick="showDispatchDetails('@item.DispatchId', '@JavaScriptEncoder(item.MaterialName)', '@JavaScriptEncoder(orderNoText)', '@item.DispatchQuantity', '@item.DispatchDate.ToString("yyyy-MM-dd HH:mm")', '@JavaScriptEncoder(dispatchedByText)', '@JavaScriptEncoder(destinationText)', '@JavaScriptEncoder(item.Status)', '@JavaScriptEncoder(item.Remarks)')">
+                                            <i class="bi bi-eye-fill me-1"></i> Details
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+        <div class="card-footer bg-light py-3 px-4 border-top text-muted small d-flex justify-content-between align-items-center">
+            <div>
+                <i class="bi bi-shield-check text-success me-1"></i> Inventory Manager Control Panel | Outward Material Dispatch Management
+            </div>
+            <div>
+                Total Dispatched Volume: <strong class="text-dark">@totalQtyDispatched.ToString("N0") Units</strong>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Dispatch Details Modal -->
+<div class="modal fade" id="dispatchDetailModal" tabindex="-1" aria-labelledby="dispatchDetailModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+            <div class="modal-header text-white py-3 px-4" style="background: linear-gradient(135deg, #064e3b, #059669);">
+                <h5 class="modal-header-title fw-bold mb-0" id="dispatchDetailModalLabel">
+                    <i class="bi bi-truck me-2"></i>Dispatch Ticket Details
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom">
+                    <div>
+                        <span class="badge bg-warning text-dark px-3 py-1 rounded-pill fs-7 fw-bold mb-1">Inventory Manager Audit</span>
+                        <h4 class="fw-bold text-success mb-0" id="modalDispatchId">DISP-0000</h4>
+                    </div>
+                    <div>
+                        <span class="badge bg-success px-3 py-2 rounded-pill fs-6" id="modalStatus">Dispatched</span>
+                    </div>
+                </div>
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="p-3 bg-light rounded-3 border h-100">
+                            <label class="text-muted small fw-semibold text-uppercase d-block mb-1">Raw Material</label>
+                            <div class="fs-5 fw-bold text-dark" id="modalMaterialName">-</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 bg-light rounded-3 border h-100">
+                            <label class="text-muted small fw-semibold text-uppercase d-block mb-1">Production Order</label>
+                            <div class="fs-5 fw-bold text-primary" id="modalOrderNo">-</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-3 bg-light rounded-3 border h-100">
+                            <label class="text-muted small fw-semibold text-uppercase d-block mb-1">Dispatch Quantity</label>
+                            <div class="fs-5 fw-bold text-success" id="modalQuantity">0</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-3 bg-light rounded-3 border h-100">
+                            <label class="text-muted small fw-semibold text-uppercase d-block mb-1">Dispatch Date & Time</label>
+                            <div class="fs-6 fw-bold text-dark" id="modalDate">-</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-3 bg-light rounded-3 border h-100">
+                            <label class="text-muted small fw-semibold text-uppercase d-block mb-1">Destination Location</label>
+                            <div class="fs-6 fw-bold text-danger" id="modalDestination">-</div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="p-3 bg-light rounded-3 border">
+                            <label class="text-muted small fw-semibold text-uppercase d-block mb-1">Dispatched By (Authorizer)</label>
+                            <div class="fs-6 fw-semibold text-dark" id="modalDispatchedBy">-</div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="p-3 bg-light rounded-3 border">
+                            <label class="text-muted small fw-semibold text-uppercase d-block mb-1">Remarks & Audit Notes</label>
+                            <div class="text-dark" id="modalRemarks">No remarks provided.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer bg-light py-3 px-4 border-top">
+                <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@functions {
+    public string JavaScriptEncoder(string? value)
+    {
+        if (string.IsNullOrEmpty(value)) return "";
+        return value.Replace("'", "\\'").Replace("\"", "&quot;").Replace("\r", "").Replace("\n", " ");
+    }
+}
+
+@section Scripts {
+    <script>
+        function filterDispatches() {
+            const searchValue = document.getElementById('dispatchSearchInput').value.toLowerCase().trim();
+            const statusValue = document.getElementById('statusFilterSelect').value.toLowerCase().trim();
+            const rows = document.querySelectorAll('.dispatch-row');
+
+            let visibleCount = 0;
+
+            rows.forEach(row => {
+                const searchText = (row.getAttribute('data-search') || '').toLowerCase();
+                const rowStatus = (row.getAttribute('data-status') || '').toLowerCase();
+
+                const matchesSearch = !searchValue || searchText.includes(searchValue);
+                const matchesStatus = !statusValue || rowStatus.includes(statusValue);
+
+                if (matchesSearch && matchesStatus) {
+                    row.style.display = '';
+                    visibleCount++;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+
+            const visibleBadge = document.getElementById('visibleRowCount');
+            if (visibleBadge) {
+                visibleBadge.textContent = visibleCount + ' Record(s)';
+            }
+        }
+
+        function resetFilters() {
+            document.getElementById('dispatchSearchInput').value = '';
+            document.getElementById('statusFilterSelect').value = '';
+            filterDispatches();
+        }
+
+        function showDispatchDetails(id, material, order, qty, date, by, destination, status, remarks) {
+            document.getElementById('modalDispatchId').textContent = 'DISP-' + String(id).padStart(4, '0');
+            document.getElementById('modalMaterialName').textContent = material || 'N/A';
+            document.getElementById('modalOrderNo').textContent = order || 'N/A';
+            document.getElementById('modalQuantity').textContent = Number(qty).toLocaleString();
+            document.getElementById('modalDate').textContent = date || 'N/A';
+            document.getElementById('modalDestination').textContent = destination || 'Main Warehouse';
+            document.getElementById('modalDispatchedBy').textContent = by || 'Inventory Manager';
+            document.getElementById('modalStatus').textContent = status || 'Dispatched';
+            document.getElementById('modalRemarks').textContent = remarks || 'No remarks recorded for this dispatch ticket.';
+
+            const modal = new bootstrap.Modal(document.getElementById('dispatchDetailModal'));
+            modal.show();
+        }
+
+        function exportDispatchCSV() {
+            const rows = document.querySelectorAll('.dispatch-row');
+            if (!rows.length) {
+                alert('No dispatch data available to export.');
+                return;
+            }
+
+            let csvContent = "data:text/csv;charset=utf-8,Dispatch ID,Raw Material,Production Order,Dispatch Qty,Dispatch Date,Destination,Dispatched By,Status,Remarks\n";
+
+            rows.forEach(row => {
+                const id = row.getAttribute('data-id');
+                const material = '"' + (row.getAttribute('data-material') || '').replace(/"/g, '""') + '"';
+                const order = '"' + (row.getAttribute('data-order') || '').replace(/"/g, '""') + '"';
+                const qty = row.getAttribute('data-qty');
+                const date = '"' + (row.getAttribute('data-date') || '').replace(/"/g, '""') + '"';
+                const destination = '"' + (row.getAttribute('data-destination') || '').replace(/"/g, '""') + '"';
+                const by = '"' + (row.getAttribute('data-by') || '').replace(/"/g, '""') + '"';
+                const status = '"' + (row.getAttribute('data-status') || '').replace(/"/g, '""') + '"';
+                const remarks = '"' + (row.getAttribute('data-remarks') || '').replace(/"/g, '""') + '"';
+
+                csvContent += `DISP-${id},${material},${order},${qty},${date},${destination},${by},${status},${remarks}\n`;
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `material_dispatches_${new Date().toISOString().slice(0,10)}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    </script>
+}

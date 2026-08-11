@@ -87,8 +87,23 @@
                                 @if (sessionRole == "Admin" || sessionRole == "Inventory Manager" || sessionRole == "Store Manager")
                                 {
                                     <li>
+                                        <a class="dropdown-item py-2" asp-controller="MaterialReceipt" asp-action="Index">
+                                            <i class="bi bi-box-arrow-in-down me-2 text-success"></i> Material Receipts (GRN)
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item py-2" asp-controller="MaterialDispatch" asp-action="Index">
+                                            <i class="bi bi-truck me-2 text-warning"></i> Material Dispatches
+                                        </a>
+                                    </li>
+                                    <li>
                                         <a class="dropdown-item py-2" asp-controller="RawMaterial" asp-action="Index">
                                             <i class="bi bi-boxes me-2 text-warning"></i> Raw Materials
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item py-2" asp-controller="Supplier" asp-action="Index">
+                                            <i class="bi bi-truck me-2 text-primary"></i> Supplier Directory
                                         </a>
                                     </li>
                                 }
@@ -339,6 +354,104 @@
                             </li>
                         </ul>
                     }
+                    else if (sessionRole == "Inventory Manager")
+                    {
+                        <!-- Inventory Manager Dedicated Navigation Sidebar -->
+                        <div class="sidebar-section-title">Inventory Navigation</div>
+                        <ul class="sidebar-nav">
+                            <li>
+                                <a class="sidebar-link @(currentController == "Account" && currentAction == "Dashboard" ? "active" : "")" asp-controller="Account" asp-action="Dashboard">
+                                    <i class="bi bi-speedometer2 text-primary"></i> Inventory Dashboard
+                                </a>
+                            </li>
+                            <li>
+                                <a class="sidebar-link @(currentController == "Home" ? "active" : "")" asp-controller="Home" asp-action="Index">
+                                    <i class="bi bi-house-door text-info"></i> Home Page
+                                </a>
+                            </li>
+                        </ul>
+
+                        <div class="sidebar-section-title mt-3">Material Inward & Receipts</div>
+                        <ul class="sidebar-nav">
+                            <li>
+                                <a class="sidebar-link @(currentController == "MaterialReceipt" && currentAction == "Index" ? "active" : "")" asp-controller="MaterialReceipt" asp-action="Index">
+                                    <i class="bi bi-box-arrow-in-down text-success"></i> Material Receipts (GRN)
+                                </a>
+                            </li>
+                            <li>
+                                <a class="sidebar-link @(currentController == "MaterialReceipt" && currentAction == "Create" ? "active" : "")" asp-controller="MaterialReceipt" asp-action="Create">
+                                    <i class="bi bi-plus-circle-fill text-success"></i> Log Material Receipt
+                                </a>
+                            </li>
+                        </ul>
+
+                        <div class="sidebar-section-title mt-3">Raw Material Stock</div>
+                        <ul class="sidebar-nav">
+                            <li>
+                                <a class="sidebar-link @(currentController == "RawMaterial" && currentAction == "Index" ? "active" : "")" asp-controller="RawMaterial" asp-action="Index">
+                                    <i class="bi bi-boxes text-warning"></i> Raw Materials List
+                                </a>
+                            </li>
+                            <li>
+                                <a class="sidebar-link @(currentController == "RawMaterial" && currentAction == "Create" ? "active" : "")" asp-controller="RawMaterial" asp-action="Create">
+                                    <i class="bi bi-plus-circle-fill text-success"></i> Add Raw Material
+                                </a>
+                            </li>
+                            <li>
+                                <a class="sidebar-link @(currentController == "RawMaterial" && currentAction == "LowStock" ? "active" : "")" asp-controller="RawMaterial" asp-action="LowStock">
+                                    <i class="bi bi-exclamation-triangle-fill text-danger"></i> Low Stock Alerts
+                                </a>
+                            </li>
+                            <li>
+                                <a class="sidebar-link @(currentController == "MaterialStock" && currentAction == "Index" ? "active" : "")" asp-controller="MaterialStock" asp-action="Index">
+                                    <i class="bi bi-box-seam-fill text-warning"></i> Material Stock Inventory
+                                </a>
+                            </li>
+                            <li>
+                                <a class="sidebar-link @(currentController == "MaterialStock" && currentAction == "Create" ? "active" : "")" asp-controller="MaterialStock" asp-action="Create">
+                                    <i class="bi bi-plus-circle-fill text-success"></i> Add Material Stock
+                                </a>
+                            </li>
+                        </ul>
+
+                        <div class="sidebar-section-title mt-3">Issues & Returns</div>
+                        <ul class="sidebar-nav">
+                            <li>
+                                <a class="sidebar-link @(currentController == "MaterialIssue" && currentAction == "Index" ? "active" : "")" asp-controller="MaterialIssue" asp-action="Index">
+                                    <i class="bi bi-box-arrow-up-right text-indigo" style="color: #6366f1;"></i> Material Issues
+                                </a>
+                            </li>
+                            <li>
+                                <a class="sidebar-link @(currentController == "MaterialDispatch" && currentAction == "Index" ? "active" : "")" asp-controller="MaterialDispatch" asp-action="Index">
+                                    <i class="bi bi-truck text-warning"></i> Material Dispatches
+                                </a>
+                            </li>
+                            <li>
+                                <a class="sidebar-link @(currentController == "MaterialReturn" && currentAction == "Index" ? "active" : "")" asp-controller="MaterialReturn" asp-action="Index">
+                                    <i class="bi bi-box-arrow-in-left text-primary"></i> Material Returns
+                                </a>
+                            </li>
+                            <li>
+                                <a class="sidebar-link @(currentController == "StockVerification" && currentAction == "Index" ? "active" : "")" asp-controller="StockVerification" asp-action="Index">
+                                    <i class="bi bi-clipboard-check-fill text-indigo" style="color: #6366f1;"></i> Stock Verification
+                                </a>
+                            </li>
+                        </ul>
+
+                        <div class="sidebar-section-title mt-3">Supplier Directory</div>
+                        <ul class="sidebar-nav">
+                            <li>
+                                <a class="sidebar-link @(currentController == "Supplier" && currentAction == "Index" ? "active" : "")" asp-controller="Supplier" asp-action="Index">
+                                    <i class="bi bi-truck text-primary"></i> Supplier Directory
+                                </a>
+                            </li>
+                            <li>
+                                <a class="sidebar-link @(currentController == "Supplier" && currentAction == "Create" ? "active" : "")" asp-controller="Supplier" asp-action="Create">
+                                    <i class="bi bi-plus-circle-fill text-success"></i> Add New Supplier
+                                </a>
+                            </li>
+                        </ul>
+                    }
                     else
                     {
                         <!-- Admin & Master Navigation Sidebar -->
@@ -448,6 +561,11 @@
                                     <i class="bi bi-plus-circle-fill text-success"></i> Return Raw Material
                                 </a>
                             </li>
+                            <li>
+                                <a class="sidebar-link @(currentController == "MaterialDispatch" && currentAction == "Index" ? "active" : "")" asp-controller="MaterialDispatch" asp-action="Index">
+                                    <i class="bi bi-truck text-warning"></i> Material Dispatches
+                                </a>
+                            </li>
                         </ul>
 
                         <div class="sidebar-section-title mt-3">Employee & HR Management</div>
@@ -504,6 +622,11 @@
                         <div class="sidebar-section-title mt-3">Raw Material Inventory</div>
                         <ul class="sidebar-nav">
                             <li>
+                                <a class="sidebar-link @(currentController == "MaterialReceipt" && currentAction == "Index" ? "active" : "")" asp-controller="MaterialReceipt" asp-action="Index">
+                                    <i class="bi bi-box-arrow-in-down text-success"></i> Material Receipts (GRN)
+                                </a>
+                            </li>
+                            <li>
                                 <a class="sidebar-link @(currentController == "RawMaterial" && currentAction == "Index" ? "active" : "")" asp-controller="RawMaterial" asp-action="Index">
                                     <i class="bi bi-boxes text-warning"></i> Raw Materials List
                                 </a>
@@ -516,6 +639,20 @@
                             <li>
                                 <a class="sidebar-link @(currentController == "RawMaterial" && currentAction == "LowStock" ? "active" : "")" asp-controller="RawMaterial" asp-action="LowStock">
                                     <i class="bi bi-exclamation-triangle-fill text-danger"></i> Low Stock Alerts
+                                </a>
+                            </li>
+                        </ul>
+
+                        <div class="sidebar-section-title mt-3">Supplier & Vendors</div>
+                        <ul class="sidebar-nav">
+                            <li>
+                                <a class="sidebar-link @(currentController == "Supplier" && currentAction == "Index" ? "active" : "")" asp-controller="Supplier" asp-action="Index">
+                                    <i class="bi bi-truck text-primary"></i> Supplier Directory
+                                </a>
+                            </li>
+                            <li>
+                                <a class="sidebar-link @(currentController == "Supplier" && currentAction == "Create" ? "active" : "")" asp-controller="Supplier" asp-action="Create">
+                                    <i class="bi bi-plus-circle-fill text-success"></i> Add New Supplier
                                 </a>
                             </li>
                         </ul>

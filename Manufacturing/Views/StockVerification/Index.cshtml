@@ -157,7 +157,8 @@
                         <th class="py-3">Verification Date</th>
                         <th class="py-3">Verified By</th>
                         <th class="py-3">Status</th>
-                        <th class="pe-4 py-3">Remarks</th>
+                        <th class="py-3">Remarks</th>
+                        <th class="pe-4 py-3 text-end">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
@@ -218,8 +219,21 @@
                                         @(string.IsNullOrEmpty(item.Status) ? "Verified" : item.Status)
                                     </span>
                                 </td>
-                                <td class="pe-4 py-3 text-muted fs-7 max-w-xs text-truncate" style="max-width: 200px;">
+                                <td class="py-3 text-muted fs-7 max-w-xs text-truncate" style="max-width: 180px;">
                                     @(string.IsNullOrEmpty(item.Remarks) ? "-" : item.Remarks)
+                                </td>
+                                <td class="pe-4 py-3 text-end">
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        <a asp-action="Details" asp-route-id="@item.VerificationId" class="btn btn-outline-info" title="View Audit Details">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a asp-action="Edit" asp-route-id="@item.VerificationId" class="btn btn-outline-primary" title="Edit Audit Record">
+                                            <i class="bi bi-pencil-square"></i>
+                                        </a>
+                                        <a asp-action="Delete" asp-route-id="@item.VerificationId" class="btn btn-outline-danger" title="Delete Audit Record" onclick="return confirm('Are you sure you want to delete this stock verification audit record?');">
+                                            <i class="bi bi-trash-fill"></i>
+                                        </a>
+                                    </div>
                                 </td>
                             </tr>
                         }
@@ -227,7 +241,7 @@
                     else
                     {
                         <tr>
-                            <td colspan="9" class="text-center py-5 text-muted">
+                            <td colspan="10" class="text-center py-5 text-muted">
                                 <div class="py-4">
                                     <i class="bi bi-clipboard-check fs-1 text-muted opacity-50 d-block mb-3"></i>
                                     <h5>No Stock Verifications Found</h5>
