@@ -1,0 +1,171 @@
+@model Manufacturing.Models.StockAdjustment
+
+@{
+    ViewData["Title"] = $"Edit Stock Adjustment ADJ-{Model?.AdjustmentId.ToString("D4")} - Inventory Manager";
+}
+
+<div class="container-fluid px-4 py-4">
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-9 col-xl-8">
+            <!-- Navigation Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <div class="d-flex align-items-center gap-2 mb-1">
+                        <span class="badge bg-warning text-dark px-3 py-1 rounded-pill text-uppercase fs-7 fw-bold">Inventory Manager Portal</span>
+                        <span class="badge bg-primary text-white px-3 py-1 rounded-pill fs-7">Edit Ticket ADJ-@Model?.AdjustmentId.ToString("D4")</span>
+                    </div>
+                    <h3 class="fw-bold mb-0 text-dark">
+                        <i class="bi bi-pencil-square text-primary me-2"></i> Edit Stock Adjustment Record
+                    </h3>
+                    <p class="text-muted mb-0 small">Update existing inventory stock adjustment parameters and audit log notes.</p>
+                </div>
+                <a asp-action="Index" class="btn btn-outline-secondary rounded-pill px-4">
+                    <i class="bi bi-arrow-left me-1"></i> Back to Roster
+                </a>
+            </div>
+
+            <!-- Form Card -->
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden bg-white">
+                <div class="card-header text-white p-4" style="background: linear-gradient(135deg, #064e3b 0%, #047857 50%, #059669 100%);">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <h5 class="fw-bold mb-1"><i class="bi bi-pencil-fill me-2 text-warning"></i> Modify Adjustment Ticket ADJ-@Model?.AdjustmentId.ToString("D4")</h5>
+                            <p class="mb-0 opacity-85 small">Update material stock quantities, type, status, or audit reason below.</p>
+                        </div>
+                        <i class="bi bi-sliders fs-1 opacity-50"></i>
+                    </div>
+                </div>
+
+                <div class="card-body p-4 p-md-5">
+                    <form asp-action="Edit" method="post" id="editAdjustmentForm">
+                        <div asp-validation-summary="All" class="alert alert-danger rounded-3 mb-4"></div>
+
+                        <!-- Primary Key & Hidden Non-Form Fields to ensure ModelState.IsValid passes -->
+                        <input type="hidden" asp-for="AdjustmentId" />
+                        <input type="hidden" asp-for="MaterialName" value="@(string.IsNullOrEmpty(Model?.MaterialName) ? "N/A" : Model.MaterialName)" />
+                        <input type="hidden" asp-for="CreatedDate" value="@(Model?.CreatedDate != DateTime.MinValue ? Model?.CreatedDate.ToString("yyyy-MM-ddTHH:mm:ss") : DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss"))" />
+
+                        <div class="row g-3">
+                            <!-- Raw Material Selection -->
+                            <div class="col-12 col-md-6">
+                                <label asp-for="MaterialId" class="form-label fw-semibold text-dark">Raw Material <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-boxes"></i></span>
+                                    <select asp-for="MaterialId" asp-items="@ViewBag.MaterialList" class="form-select border-start-0 py-2 rounded-end-3" id="materialSelect" required>
+                                        <option value="">-- Choose Raw Material --</option>
+                                    </select>
+                                </div>
+                                <span asp-validation-for="MaterialId" class="text-danger small"></span>
+                            </div>
+
+                            <!-- Adjustment Type -->
+                            <div class="col-12 col-md-6">
+                                <label asp-for="AdjustmentType" class="form-label fw-semibold text-dark">Adjustment Type <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-arrow-down-up"></i></span>
+                                    <select asp-for="AdjustmentType" class="form-select border-start-0 py-2 rounded-end-3" id="typeSelect">
+                                        <option value="Add">Add / Increase Stock (+)</option>
+                                        <option value="Deduct">Deduct / Reduce Stock (-)</option>
+                                        <option value="Scrap">Scrap / Wastage (-)</option>
+                                        <option value="Damaged">Damaged Material (-)</option>
+                                        <option value="Correction">System Audit Correction</option>
+                                    </select>
+                                </div>
+                                <span asp-validation-for="AdjustmentType" class="text-danger small"></span>
+                            </div>
+
+                            <!-- Current Stock (Before Adjustment) -->
+                            <div class="col-12 col-md-6">
+                                <label asp-for="CurrentStock" class="form-label fw-semibold text-dark">Current Stock (Before Adjustment) <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-archive"></i></span>
+                                    <input asp-for="CurrentStock" type="number" min="0" class="form-control border-start-0 py-2 rounded-end-3" placeholder="Current stock" required />
+                                </div>
+                                <span asp-validation-for="CurrentStock" class="text-danger small"></span>
+                            </div>
+
+                            <!-- Adjustment Quantity -->
+                            <div class="col-12 col-md-6">
+                                <label asp-for="AdjustmentQuantity" class="form-label fw-semibold text-dark">Adjustment Quantity <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-123"></i></span>
+                                    <input asp-for="AdjustmentQuantity" type="number" min="1" class="form-control border-start-0 py-2 rounded-end-3" placeholder="Adjustment quantity" required />
+                                </div>
+                                <span asp-validation-for="AdjustmentQuantity" class="text-danger small"></span>
+                            </div>
+
+                            <!-- Adjustment Date & Time -->
+                            <div class="col-12 col-md-6">
+                                <label asp-for="AdjustmentDate" class="form-label fw-semibold text-dark">Adjustment Date & Time <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-calendar-event"></i></span>
+                                    <input asp-for="AdjustmentDate" type="datetime-local" class="form-control border-start-0 py-2 rounded-end-3" value="@(Model?.AdjustmentDate != DateTime.MinValue ? Model?.AdjustmentDate.ToString("yyyy-MM-ddTHH:mm") : DateTime.Now.ToString("yyyy-MM-ddTHH:mm"))" required />
+                                </div>
+                                <span asp-validation-for="AdjustmentDate" class="text-danger small"></span>
+                            </div>
+
+                            <!-- Adjusted By -->
+                            <div class="col-12 col-md-6">
+                                <label asp-for="AdjustedBy" class="form-label fw-semibold text-dark">Adjusted By (Authorizer)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-person"></i></span>
+                                    <input asp-for="AdjustedBy" class="form-control border-start-0 py-2 rounded-end-3" placeholder="e.g. Inventory Manager" value="@(string.IsNullOrEmpty(Model?.AdjustedBy) ? "Inventory Manager" : Model.AdjustedBy)" />
+                                </div>
+                                <span asp-validation-for="AdjustedBy" class="text-danger small"></span>
+                            </div>
+
+                            <!-- Reason -->
+                            <div class="col-12 col-md-6">
+                                <label asp-for="Reason" class="form-label fw-semibold text-dark">Adjustment Reason</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-info-circle"></i></span>
+                                    <input asp-for="Reason" class="form-control border-start-0 py-2 rounded-end-3" placeholder="e.g. Physical Audit Discrepancy / Scrap" value="@(string.IsNullOrEmpty(Model?.Reason) ? "Physical Audit Discrepancy" : Model.Reason)" />
+                                </div>
+                                <span asp-validation-for="Reason" class="text-danger small"></span>
+                            </div>
+
+                            <!-- Status -->
+                            <div class="col-12 col-md-6">
+                                <label asp-for="Status" class="form-label fw-semibold text-dark">Adjustment Status</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-tag"></i></span>
+                                    <select asp-for="Status" class="form-select border-start-0 py-2 rounded-end-3">
+                                        <option value="Adjusted">Adjusted</option>
+                                        <option value="Approved">Approved</option>
+                                        <option value="Pending">Pending</option>
+                                        <option value="Rejected">Rejected</option>
+                                    </select>
+                                </div>
+                                <span asp-validation-for="Status" class="text-danger small"></span>
+                            </div>
+
+                            <!-- Remarks -->
+                            <div class="col-12">
+                                <label asp-for="Remarks" class="form-label fw-semibold text-dark">Remarks / Operational Notes</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-chat-left-text"></i></span>
+                                    <textarea asp-for="Remarks" class="form-control border-start-0 py-2 rounded-end-3" rows="3" placeholder="Add operational context or audit notes...">@(string.IsNullOrEmpty(Model?.Remarks) ? "N/A" : Model.Remarks)</textarea>
+                                </div>
+                                <span asp-validation-for="Remarks" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <!-- Form Submit / Cancel Buttons -->
+                        <div class="d-flex justify-content-end gap-3 mt-4 pt-3 border-top">
+                            <a asp-action="Index" class="btn btn-light rounded-pill px-4 py-2 border">
+                                Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary rounded-pill px-4 py-2 shadow-sm fw-semibold">
+                                <i class="bi bi-check-circle me-1"></i> Update Stock Adjustment
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

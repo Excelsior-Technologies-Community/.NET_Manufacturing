@@ -1,0 +1,121 @@
+@model Manufacturing.Models.MachineAllocation
+
+@{
+    ViewData["Title"] = $"Delete Machine Allocation ALLOC-{Model?.AllocationId.ToString("D4")} - Machine Supervisor";
+    var machineNameDisplay = string.IsNullOrEmpty(Model?.MachineName) ? $"Machine #{Model?.MachineId}" : Model.MachineName;
+    var orderNoDisplay = string.IsNullOrEmpty(Model?.OrderNo) ? $"PO-#{Model?.ProductionOrderId}" : Model.OrderNo;
+    var allocatedByDisplay = string.IsNullOrEmpty(Model?.AllocatedBy) ? "Machine Supervisor" : Model.AllocatedBy;
+    var startTimeText = Model != null ? DateTime.Today.Add(Model.StartTime).ToString("hh:mm tt") : "N/A";
+    var endTimeText = Model?.EndTime.HasValue == true ? DateTime.Today.Add(Model.EndTime.Value).ToString("hh:mm tt") : "Ongoing";
+}
+
+<div class="container-fluid px-4 py-4">
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-8 col-xl-7">
+            <!-- Navigation Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <div class="d-flex align-items-center gap-2 mb-1">
+                        <span class="badge bg-danger text-white px-3 py-1 rounded-pill text-uppercase fs-7 fw-bold">Delete Confirmation</span>
+                        <span class="badge bg-outline-danger text-danger border border-danger px-3 py-1 rounded-pill fs-7">ALLOC-@Model?.AllocationId.ToString("D4")</span>
+                    </div>
+                    <h3 class="fw-bold mb-0 text-dark">
+                        <i class="bi bi-exclamation-triangle-fill text-danger me-2"></i> Delete Machine Allocation Ticket
+                    </h3>
+                    <p class="text-muted mb-0 small">Confirm removal of this equipment allocation record from the manufacturing database.</p>
+                </div>
+                <a asp-action="Index" class="btn btn-outline-secondary rounded-pill px-4">
+                    <i class="bi bi-arrow-left me-1"></i> Back to Roster
+                </a>
+            </div>
+
+            <!-- Confirmation Card -->
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden bg-white">
+                <div class="card-header text-white p-4" style="background: linear-gradient(135deg, #7f1d1d 0%, #991b1b 50%, #dc2626 100%);">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <h5 class="fw-bold mb-1"><i class="bi bi-trash-fill me-2 text-warning"></i> Permanent Deletion Warning</h5>
+                            <p class="mb-0 opacity-85 small">Are you sure you want to delete this machine allocation record? This action cannot be undone.</p>
+                        </div>
+                        <i class="bi bi-exclamation-octagon fs-1 opacity-50"></i>
+                    </div>
+                </div>
+
+                <div class="card-body p-4 p-md-5">
+                    <div class="alert alert-warning rounded-3 mb-4 d-flex align-items-center gap-3">
+                        <i class="bi bi-shield-exclamation text-warning fs-3 flex-shrink-0"></i>
+                        <div>
+                            <strong>Warning:</strong> Deleting this ticket will permanently delete the equipment time allocation entry <strong>ALLOC-@Model?.AllocationId.ToString("D4")</strong> from your operational log.
+                        </div>
+                    </div>
+
+                    <!-- Details Summary Grid -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <div class="p-3 bg-light rounded-3 border">
+                                <small class="text-muted text-uppercase fw-semibold d-block mb-1">Allocation Ticket ID</small>
+                                <div class="fs-5 fw-bold text-danger">ALLOC-@Model?.AllocationId.ToString("D4")</div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="p-3 bg-light rounded-3 border">
+                                <small class="text-muted text-uppercase fw-semibold d-block mb-1">Equipment / Machine</small>
+                                <div class="fs-5 fw-bold text-dark">@machineNameDisplay</div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="p-3 bg-light rounded-3 border">
+                                <small class="text-muted text-uppercase fw-semibold d-block mb-1">Production Order</small>
+                                <div class="fs-6 fw-bold text-primary">@orderNoDisplay</div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="p-3 bg-light rounded-3 border">
+                                <small class="text-muted text-uppercase fw-semibold d-block mb-1">Allocation Date</small>
+                                <div class="fs-6 fw-semibold text-dark">@Model?.AllocationDate.ToString("MMM dd, yyyy")</div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="p-3 bg-light rounded-3 border">
+                                <small class="text-muted text-uppercase fw-semibold d-block mb-1">Shift Time Range</small>
+                                <div class="fs-6 fw-semibold text-dark">@startTimeText - @endTimeText</div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="p-3 bg-light rounded-3 border">
+                                <small class="text-muted text-uppercase fw-semibold d-block mb-1">Allocated By</small>
+                                <div class="fs-6 fw-semibold text-dark">@allocatedByDisplay</div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-12">
+                            <div class="p-3 bg-light rounded-3 border">
+                                <small class="text-muted text-uppercase fw-semibold d-block mb-1">Status</small>
+                                <div class="fs-6 fw-semibold text-dark">@(string.IsNullOrEmpty(Model?.Status) ? "Allocated" : Model.Status)</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Delete Form Actions -->
+                    <form asp-action="Delete" method="post" id="deleteForm">
+                        <input type="hidden" name="id" value="@Model?.AllocationId" />
+
+                        <div class="d-flex justify-content-end gap-3 pt-3 border-top">
+                            <a asp-action="Index" class="btn btn-light rounded-pill px-4 py-2 border">
+                                Cancel
+                            </a>
+                            <button type="submit" class="btn btn-danger rounded-pill px-4 py-2 shadow-sm fw-semibold">
+                                <i class="bi bi-trash-fill me-1"></i> Confirm & Delete Ticket
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

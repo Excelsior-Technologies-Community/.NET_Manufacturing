@@ -106,6 +106,11 @@
                                             <i class="bi bi-truck me-2 text-primary"></i> Supplier Directory
                                         </a>
                                     </li>
+                                    <li>
+                                        <a class="dropdown-item py-2" asp-controller="StockAdjustment" asp-action="Index">
+                                            <i class="bi bi-sliders me-2 text-success"></i> Stock Adjustments
+                                        </a>
+                                    </li>
                                 }
                                 @if (sessionRole == "Admin")
                                 {
@@ -141,6 +146,11 @@
                                 <li>
                                     <a class="dropdown-item py-2" asp-controller="MachineAssignment" asp-action="Index">
                                         <i class="bi bi-cpu-fill me-2 text-primary"></i> Machine Assignments
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item py-2" asp-controller="MachineAllocation" asp-action="Index">
+                                        <i class="bi bi-cpu me-2 text-info"></i> Machine Allocations
                                     </a>
                                 </li>
                                 <li>
@@ -252,6 +262,16 @@
                             <li>
                                 <a class="sidebar-link @(currentController == "MachineAssignment" && currentAction == "Create" ? "active" : "")" asp-controller="MachineAssignment" asp-action="Create">
                                     <i class="bi bi-plus-circle-fill text-success"></i> Assign Machine
+                                </a>
+                            </li>
+                            <li>
+                                <a class="sidebar-link @(currentController == "MachineAllocation" && currentAction == "Index" ? "active" : "")" asp-controller="MachineAllocation" asp-action="Index">
+                                    <i class="bi bi-cpu text-info"></i> Machine Allocations
+                                </a>
+                            </li>
+                            <li>
+                                <a class="sidebar-link @(currentController == "MachineAllocation" && currentAction == "Create" ? "active" : "")" asp-controller="MachineAllocation" asp-action="Create">
+                                    <i class="bi bi-plus-circle-fill text-success"></i> Allocate Machine
                                 </a>
                             </li>
                             <li>
@@ -436,6 +456,11 @@
                                     <i class="bi bi-clipboard-check-fill text-indigo" style="color: #6366f1;"></i> Stock Verification
                                 </a>
                             </li>
+                            <li>
+                                <a class="sidebar-link @(currentController == "StockAdjustment" && currentAction == "Index" ? "active" : "")" asp-controller="StockAdjustment" asp-action="Index">
+                                    <i class="bi bi-sliders text-success"></i> Stock Adjustments
+                                </a>
+                            </li>
                         </ul>
 
                         <div class="sidebar-section-title mt-3">Supplier Directory</div>
@@ -489,6 +514,16 @@
                             <li>
                                 <a class="sidebar-link @(currentController == "MachineAssignment" && currentAction == "Create" ? "active" : "")" asp-controller="MachineAssignment" asp-action="Create">
                                     <i class="bi bi-plus-circle-fill text-success"></i> New Machine Assignment
+                                </a>
+                            </li>
+                            <li>
+                                <a class="sidebar-link @(currentController == "MachineAllocation" && currentAction == "Index" ? "active" : "")" asp-controller="MachineAllocation" asp-action="Index">
+                                    <i class="bi bi-cpu text-info"></i> Machine Allocations
+                                </a>
+                            </li>
+                            <li>
+                                <a class="sidebar-link @(currentController == "MachineAllocation" && currentAction == "Create" ? "active" : "")" asp-controller="MachineAllocation" asp-action="Create">
+                                    <i class="bi bi-plus-circle-fill text-success"></i> New Machine Allocation
                                 </a>
                             </li>
                             <li>

@@ -1,0 +1,246 @@
+@model Manufacturing.Models.StockAdjustment
+
+@{
+    ViewData["Title"] = $"Stock Adjustment Ticket ADJ-{Model.AdjustmentId.ToString("D4")} Details";
+
+    bool isDeduct = string.Equals(Model.AdjustmentType, "Deduct", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(Model.AdjustmentType, "Decrease", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(Model.AdjustmentType, "Scrap", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(Model.AdjustmentType, "Damaged", StringComparison.OrdinalIgnoreCase);
+
+    int calculatedNewStock = isDeduct ? (Model.CurrentStock - Model.AdjustmentQuantity) : (Model.CurrentStock + Model.AdjustmentQuantity);
+
+    string getStatusBadgeClass(string? status)
+    {
+        switch (status?.Trim().ToLower())
+        {
+            case "adjusted":
+            case "approved":
+            case "completed":
+                return "bg-success text-white";
+            case "pending":
+            case "processing":
+                return "bg-warning text-dark";
+            case "rejected":
+            case "cancelled":
+                return "bg-danger text-white";
+            default:
+                return "bg-secondary text-white";
+        }
+    }
+
+    var statusBadgeClass = getStatusBadgeClass(Model.Status);
+    var materialNameDisplay = string.IsNullOrEmpty(Model.MaterialName) ? $"Material #{Model.MaterialId}" : Model.MaterialName;
+    var adjustedByDisplay = string.IsNullOrEmpty(Model.AdjustedBy) ? "Inventory Manager" : Model.AdjustedBy;
+    var reasonDisplay = string.IsNullOrEmpty(Model.Reason) ? "Physical Audit Discrepancy" : Model.Reason;
+    var remarksDisplay = string.IsNullOrEmpty(Model.Remarks) ? "No operational notes recorded for this stock adjustment entry." : Model.Remarks;
+}
+
+<div class="container-fluid px-4 py-4">
+    <!-- Top Header Banner -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 p-4 rounded-4 shadow text-white" style="background: linear-gradient(135deg, #064e3b 0%, #047857 50%, #059669 100%);">
+        <div class="mb-3 mb-md-0">
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="badge bg-warning text-dark px-3 py-1 rounded-pill text-uppercase fs-7 fw-bold">Inventory Manager Audit</span>
+                <span class="badge bg-white bg-opacity-25 text-white px-3 py-1 rounded-pill fs-7">Adjustment Ticket #ADJ-@Model.AdjustmentId.ToString("D4")</span>
+            </div>
+            <h2 class="fw-bold mb-1 d-flex align-items-center">
+                <i class="bi bi-sliders text-warning me-2 fs-2"></i> Stock Adjustment Specifications
+            </h2>
+            <p class="text-emerald-100 mb-0 opacity-85">
+                Detailed record of inventory variance, quantity reconciliation, and audit authorization log.
+            </p>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+            <a asp-action="Edit" asp-route-id="@Model.AdjustmentId" class="btn btn-light rounded-pill px-3 py-2 shadow-sm text-emerald-900 fw-semibold">
+                <i class="bi bi-pencil-square me-1 text-primary"></i> Edit Ticket
+            </a>
+            <a asp-action="Delete" asp-route-id="@Model.AdjustmentId" onclick="return confirm('Are you sure you want to delete this stock adjustment record?');" class="btn btn-outline-danger btn-light rounded-pill px-3 py-2">
+                <i class="bi bi-trash me-1"></i> Delete
+            </a>
+            <a asp-action="Index" class="btn btn-outline-light rounded-pill px-3 py-2">
+                <i class="bi bi-arrow-left me-1"></i> Back to Roster
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Main Details Card -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm rounded-4 mb-4 bg-white">
+                <div class="card-header bg-white py-3 px-4 border-bottom d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-receipt-cutoff text-success fs-5"></i>
+                        <h5 class="fw-bold text-dark mb-0">Ticket Overview: ADJ-@Model.AdjustmentId.ToString("D4")</h5>
+                    </div>
+                    <span class="badge @statusBadgeClass rounded-pill px-3 py-2 fs-7">
+                        <i class="bi bi-tag-fill me-1"></i>@(string.IsNullOrEmpty(Model.Status) ? "Adjusted" : Model.Status)
+                    </span>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row g-3">
+                        <!-- Raw Material Info -->
+                        <div class="col-md-6">
+                            <div class="p-3 bg-light rounded-3 border h-100">
+                                <small class="text-muted text-uppercase fw-semibold d-block mb-1">Raw Material</small>
+                                <div class="fs-5 fw-bold text-dark">
+                                    <i class="bi bi-box-seam me-2 text-warning"></i>@materialNameDisplay
+                                </div>
+                                <div class="small text-muted mt-1">Material ID: #@Model.MaterialId</div>
+                            </div>
+                        </div>
+
+                        <!-- Adjustment Type -->
+                        <div class="col-md-6">
+                            <div class="p-3 bg-light rounded-3 border h-100">
+                                <small class="text-muted text-uppercase fw-semibold d-block mb-1">Adjustment Type</small>
+                                <div class="fs-5 fw-bold @(isDeduct ? "text-danger" : "text-success")">
+                                    <i class="bi @(isDeduct ? "bi-arrow-down-right" : "bi-arrow-up-right") me-2"></i>
+                                    @(string.IsNullOrEmpty(Model.AdjustmentType) ? "Add" : Model.AdjustmentType)
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Current Stock Before -->
+                        <div class="col-md-4">
+                            <div class="p-3 bg-light rounded-3 border h-100">
+                                <small class="text-muted text-uppercase fw-semibold d-block mb-1">Stock Before Adjustment</small>
+                                <div class="fs-5 fw-bold text-secondary">
+                                    @Model.CurrentStock.ToString("N0") <span class="fs-6 text-muted fw-normal">Units</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Adjustment Qty -->
+                        <div class="col-md-4">
+                            <div class="p-3 bg-light rounded-3 border h-100">
+                                <small class="text-muted text-uppercase fw-semibold d-block mb-1">Adjusted Quantity</small>
+                                <div class="fs-4 fw-bold @(isDeduct ? "text-danger" : "text-success")">
+                                    @(isDeduct ? "-" : "+")@Model.AdjustmentQuantity.ToString("N0") <span class="fs-6 text-muted fw-normal">Units</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Post Adjustment Balance -->
+                        <div class="col-md-4">
+                            <div class="p-3 bg-light rounded-3 border h-100">
+                                <small class="text-muted text-uppercase fw-semibold d-block mb-1">Post-Adjustment Balance</small>
+                                <div class="fs-4 fw-bold text-primary">
+                                    @calculatedNewStock.ToString("N0") <span class="fs-6 text-muted fw-normal">Units</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Adjustment Date -->
+                        <div class="col-md-6">
+                            <div class="p-3 bg-light rounded-3 border h-100">
+                                <small class="text-muted text-uppercase fw-semibold d-block mb-1">Adjustment Date & Time</small>
+                                <div class="fs-6 fw-bold text-dark">
+                                    <i class="bi bi-calendar-check me-1 text-primary"></i>@Model.AdjustmentDate.ToString("MMM dd, yyyy hh:mm tt")
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Adjusted By -->
+                        <div class="col-md-6">
+                            <div class="p-3 bg-light rounded-3 border h-100">
+                                <small class="text-muted text-uppercase fw-semibold d-block mb-1">Adjusted By (Authorizer)</small>
+                                <div class="fs-6 fw-semibold text-dark">
+                                    <i class="bi bi-person-check me-2 text-success"></i>@adjustedByDisplay
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Reason -->
+                        <div class="col-12">
+                            <div class="p-3 bg-light rounded-3 border">
+                                <small class="text-muted text-uppercase fw-semibold d-block mb-1">Adjustment Reason / Audit Category</small>
+                                <div class="fs-6 fw-semibold text-dark">
+                                    <i class="bi bi-info-circle me-2 text-primary"></i>@reasonDisplay
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- System Creation Timestamp -->
+                        <div class="col-12">
+                            <div class="p-3 bg-light rounded-3 border">
+                                <small class="text-muted text-uppercase fw-semibold d-block mb-1">System Audit Timestamp</small>
+                                <div class="fs-6 fw-semibold text-dark">
+                                    <i class="bi bi-clock-history me-2 text-info"></i>
+                                    @(Model.CreatedDate != DateTime.MinValue ? Model.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss") : "N/A")
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Remarks & Notes -->
+                        <div class="col-12">
+                            <div class="p-3 bg-light rounded-3 border">
+                                <small class="text-muted text-uppercase fw-semibold d-block mb-1">Remarks & Operational Notes</small>
+                                <div class="text-dark">@remarksDisplay</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-light py-3 px-4 border-top d-flex justify-content-between align-items-center text-muted small">
+                    <div>
+                        <i class="bi bi-shield-check text-success me-1"></i> Inventory Manager Control System Audit Ledger
+                    </div>
+                    <button type="button" onclick="window.print();" class="btn btn-sm btn-outline-secondary rounded-pill px-3">
+                        <i class="bi bi-printer me-1"></i> Print Ticket
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar / Action Card -->
+        <div class="col-lg-4">
+            <!-- Quick Actions Panel -->
+            <div class="card border-0 shadow-sm rounded-4 mb-4 bg-white">
+                <div class="card-header bg-white py-3 px-4 border-bottom">
+                    <h6 class="fw-bold text-dark mb-0">
+                        <i class="bi bi-lightning-charge-fill text-warning me-1"></i> Ticket Actions
+                    </h6>
+                </div>
+                <div class="card-body p-4">
+                    <div class="d-grid gap-2">
+                        <a asp-action="Edit" asp-route-id="@Model.AdjustmentId" class="btn btn-primary rounded-pill py-2 text-start px-3 fw-semibold">
+                            <i class="bi bi-pencil-square me-2"></i> Modify Ticket Details
+                        </a>
+                        <a asp-action="Delete" asp-route-id="@Model.AdjustmentId" onclick="return confirm('Are you sure you want to delete this stock adjustment record?');" class="btn btn-outline-danger rounded-pill py-2 text-start px-3 fw-semibold">
+                            <i class="bi bi-trash me-2"></i> Delete Adjustment Ticket
+                        </a>
+                        <a asp-action="Create" class="btn btn-outline-success rounded-pill py-2 text-start px-3 fw-semibold">
+                            <i class="bi bi-plus-circle me-2"></i> Log New Stock Adjustment
+                        </a>
+                        <a asp-action="Index" class="btn btn-outline-secondary rounded-pill py-2 text-start px-3">
+                            <i class="bi bi-list-columns me-2"></i> Return to Roster List
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Summary Meta -->
+            <div class="card border-0 shadow-sm rounded-4 bg-white p-4">
+                <h6 class="fw-bold text-dark mb-3"><i class="bi bi-info-square me-2 text-info"></i> Adjustment Metadata</h6>
+                <ul class="list-unstyled mb-0 text-muted small">
+                    <li class="mb-2 d-flex justify-content-between">
+                        <span>Adjustment ID:</span>
+                        <strong class="text-dark">#@Model.AdjustmentId</strong>
+                    </li>
+                    <li class="mb-2 d-flex justify-content-between">
+                        <span>Material ID:</span>
+                        <strong class="text-dark">#@Model.MaterialId</strong>
+                    </li>
+                    <li class="mb-2 d-flex justify-content-between">
+                        <span>Type:</span>
+                        <strong class="text-dark">@(string.IsNullOrEmpty(Model.AdjustmentType) ? "Add" : Model.AdjustmentType)</strong>
+                    </li>
+                    <li class="d-flex justify-content-between">
+                        <span>Status:</span>
+                        <strong class="text-dark">@(string.IsNullOrEmpty(Model.Status) ? "Adjusted" : Model.Status)</strong>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>

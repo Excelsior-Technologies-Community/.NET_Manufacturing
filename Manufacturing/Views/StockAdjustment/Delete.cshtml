@@ -1,0 +1,126 @@
+@model Manufacturing.Models.StockAdjustment
+
+@{
+    ViewData["Title"] = $"Delete Stock Adjustment ADJ-{Model?.AdjustmentId.ToString("D4")} - Inventory Manager";
+    var materialNameDisplay = string.IsNullOrEmpty(Model?.MaterialName) ? $"Material #{Model?.MaterialId}" : Model.MaterialName;
+    var adjustedByDisplay = string.IsNullOrEmpty(Model?.AdjustedBy) ? "Inventory Manager" : Model.AdjustedBy;
+    var reasonDisplay = string.IsNullOrEmpty(Model?.Reason) ? "Physical Audit Discrepancy" : Model.Reason;
+}
+
+<div class="container-fluid px-4 py-4">
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-8 col-xl-7">
+            <!-- Navigation Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <div class="d-flex align-items-center gap-2 mb-1">
+                        <span class="badge bg-danger text-white px-3 py-1 rounded-pill text-uppercase fs-7 fw-bold">Delete Confirmation</span>
+                        <span class="badge bg-outline-danger text-danger border border-danger px-3 py-1 rounded-pill fs-7">ADJ-@Model?.AdjustmentId.ToString("D4")</span>
+                    </div>
+                    <h3 class="fw-bold mb-0 text-dark">
+                        <i class="bi bi-exclamation-triangle-fill text-danger me-2"></i> Delete Stock Adjustment Entry
+                    </h3>
+                    <p class="text-muted mb-0 small">Confirm removal of this inventory stock adjustment record from the database.</p>
+                </div>
+                <a asp-action="Index" class="btn btn-outline-secondary rounded-pill px-4">
+                    <i class="bi bi-arrow-left me-1"></i> Back to Roster
+                </a>
+            </div>
+
+            <!-- Confirmation Card -->
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden bg-white">
+                <div class="card-header text-white p-4" style="background: linear-gradient(135deg, #7f1d1d 0%, #991b1b 50%, #dc2626 100%);">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <h5 class="fw-bold mb-1"><i class="bi bi-trash-fill me-2 text-warning"></i> Permanent Deletion Warning</h5>
+                            <p class="mb-0 opacity-85 small">Are you sure you want to delete this stock adjustment record? This action cannot be undone.</p>
+                        </div>
+                        <i class="bi bi-exclamation-octagon fs-1 opacity-50"></i>
+                    </div>
+                </div>
+
+                <div class="card-body p-4 p-md-5">
+                    <div class="alert alert-warning rounded-3 mb-4 d-flex align-items-center gap-3">
+                        <i class="bi bi-shield-exclamation text-warning fs-3 flex-shrink-0"></i>
+                        <div>
+                            <strong>Warning:</strong> Deleting this entry will permanently remove stock adjustment ticket <strong>ADJ-@Model?.AdjustmentId.ToString("D4")</strong> from your inventory audit log.
+                        </div>
+                    </div>
+
+                    <!-- Details Summary Grid -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <div class="p-3 bg-light rounded-3 border">
+                                <small class="text-muted text-uppercase fw-semibold d-block mb-1">Adjustment Ticket ID</small>
+                                <div class="fs-5 fw-bold text-danger">ADJ-@Model?.AdjustmentId.ToString("D4")</div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="p-3 bg-light rounded-3 border">
+                                <small class="text-muted text-uppercase fw-semibold d-block mb-1">Raw Material</small>
+                                <div class="fs-5 fw-bold text-dark">@materialNameDisplay</div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="p-3 bg-light rounded-3 border">
+                                <small class="text-muted text-uppercase fw-semibold d-block mb-1">Current Stock (Before)</small>
+                                <div class="fs-6 fw-bold text-secondary">@Model?.CurrentStock.ToString("N0") Units</div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="p-3 bg-light rounded-3 border">
+                                <small class="text-muted text-uppercase fw-semibold d-block mb-1">Adjustment Qty & Type</small>
+                                <div class="fs-6 fw-bold text-primary">@Model?.AdjustmentQuantity.ToString("N0") Units (@(string.IsNullOrEmpty(Model?.AdjustmentType) ? "Add" : Model.AdjustmentType))</div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="p-3 bg-light rounded-3 border">
+                                <small class="text-muted text-uppercase fw-semibold d-block mb-1">Adjustment Date</small>
+                                <div class="fs-6 fw-semibold text-dark">@Model?.AdjustmentDate.ToString("MMM dd, yyyy hh:mm tt")</div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="p-3 bg-light rounded-3 border">
+                                <small class="text-muted text-uppercase fw-semibold d-block mb-1">Adjusted By</small>
+                                <div class="fs-6 fw-semibold text-dark">@adjustedByDisplay</div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="p-3 bg-light rounded-3 border">
+                                <small class="text-muted text-uppercase fw-semibold d-block mb-1">Reason</small>
+                                <div class="fs-6 fw-semibold text-dark">@reasonDisplay</div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="p-3 bg-light rounded-3 border">
+                                <small class="text-muted text-uppercase fw-semibold d-block mb-1">Status</small>
+                                <div class="fs-6 fw-semibold text-dark">@(string.IsNullOrEmpty(Model?.Status) ? "Adjusted" : Model.Status)</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Delete Form Actions -->
+                    <form asp-action="Delete" method="post" id="deleteForm">
+                        <input type="hidden" name="id" value="@Model?.AdjustmentId" />
+
+                        <div class="d-flex justify-content-end gap-3 pt-3 border-top">
+                            <a asp-action="Index" class="btn btn-light rounded-pill px-4 py-2 border">
+                                Cancel
+                            </a>
+                            <button type="submit" class="btn btn-danger rounded-pill px-4 py-2 shadow-sm fw-semibold">
+                                <i class="bi bi-trash-fill me-1"></i> Confirm & Delete Entry
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

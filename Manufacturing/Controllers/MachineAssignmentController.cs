@@ -231,7 +231,6 @@ namespace Manufacturing.Controllers
             }
             catch
             {
-                // Ignore error if column is already expanded or permission restricted
             }
         }
 

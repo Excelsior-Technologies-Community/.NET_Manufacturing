@@ -1,0 +1,225 @@
+@model Manufacturing.Models.MaterialDispatch
+
+@{
+    ViewData["Title"] = $"Material Dispatch Ticket DISP-{Model.DispatchId.ToString("D4")} Details";
+
+    string getStatusBadgeClass(string? status)
+    {
+        switch (status?.Trim().ToLower())
+        {
+            case "dispatched":
+            case "delivered":
+            case "completed":
+                return "bg-success text-white";
+            case "in transit":
+                return "bg-info text-white";
+            case "pending":
+            case "processing":
+                return "bg-warning text-dark";
+            case "cancelled":
+            case "rejected":
+                return "bg-danger text-white";
+            default:
+                return "bg-secondary text-white";
+        }
+    }
+
+    var statusBadgeClass = getStatusBadgeClass(Model.Status);
+    var materialNameDisplay = string.IsNullOrEmpty(Model.MaterialName) ? $"Material #{Model.MaterialId}" : Model.MaterialName;
+    var orderNoDisplay = string.IsNullOrEmpty(Model.OrderNo) ? (Model.ProductionOrderId.HasValue ? $"PO-#{Model.ProductionOrderId}" : "General Dispatch") : Model.OrderNo;
+    var dispatchedByDisplay = string.IsNullOrEmpty(Model.DispatchedBy) ? "Inventory Manager" : Model.DispatchedBy;
+    var destinationDisplay = string.IsNullOrEmpty(Model.Destination) ? "Main Warehouse / Factory Floor" : Model.Destination;
+    var remarksDisplay = string.IsNullOrEmpty(Model.Remarks) ? "No operational remarks or notes recorded for this ticket." : Model.Remarks;
+}
+
+<div class="container-fluid px-4 py-4">
+    <!-- Top Header Banner -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 p-4 rounded-4 shadow text-white" style="background: linear-gradient(135deg, #064e3b 0%, #047857 50%, #059669 100%);">
+        <div class="mb-3 mb-md-0">
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="badge bg-warning text-dark px-3 py-1 rounded-pill text-uppercase fs-7 fw-bold">Inventory Manager Audit</span>
+                <span class="badge bg-white bg-opacity-25 text-white px-3 py-1 rounded-pill fs-7">Dispatch Ticket #DISP-@Model.DispatchId.ToString("D4")</span>
+            </div>
+            <h2 class="fw-bold mb-1 d-flex align-items-center">
+                <i class="bi bi-truck text-warning me-2 fs-2"></i> Dispatch Ticket Specifications
+            </h2>
+            <p class="text-emerald-100 mb-0 opacity-85">
+                Detailed record of outward raw material issue for order tracking and inventory ledger auditing.
+            </p>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+            <a asp-action="Edit" asp-route-id="@Model.DispatchId" class="btn btn-light rounded-pill px-3 py-2 shadow-sm text-emerald-900 fw-semibold">
+                <i class="bi bi-pencil-square me-1 text-primary"></i> Edit Ticket
+            </a>
+            <a asp-action="Delete" asp-route-id="@Model.DispatchId" onclick="return confirm('Are you sure you want to delete this material dispatch record?');" class="btn btn-outline-danger btn-light rounded-pill px-3 py-2">
+                <i class="bi bi-trash me-1"></i> Delete
+            </a>
+            <a asp-action="Index" class="btn btn-outline-light rounded-pill px-3 py-2">
+                <i class="bi bi-arrow-left me-1"></i> Back to Roster
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Main Details Card -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm rounded-4 mb-4 bg-white">
+                <div class="card-header bg-white py-3 px-4 border-bottom d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-receipt-cutoff text-success fs-5"></i>
+                        <h5 class="fw-bold text-dark mb-0">Ticket Overview: DISP-@Model.DispatchId.ToString("D4")</h5>
+                    </div>
+                    <span class="badge @statusBadgeClass rounded-pill px-3 py-2 fs-7">
+                        <i class="bi bi-tag-fill me-1"></i>@(string.IsNullOrEmpty(Model.Status) ? "Dispatched" : Model.Status)
+                    </span>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row g-3">
+                        <!-- Raw Material Info -->
+                        <div class="col-md-6">
+                            <div class="p-3 bg-light rounded-3 border h-100">
+                                <small class="text-muted text-uppercase fw-semibold d-block mb-1">Raw Material</small>
+                                <div class="fs-5 fw-bold text-dark">
+                                    <i class="bi bi-box-seam me-2 text-warning"></i>@materialNameDisplay
+                                </div>
+                                <div class="small text-muted mt-1">Material ID: #@Model.MaterialId</div>
+                            </div>
+                        </div>
+
+                        <!-- Production Order -->
+                        <div class="col-md-6">
+                            <div class="p-3 bg-light rounded-3 border h-100">
+                                <small class="text-muted text-uppercase fw-semibold d-block mb-1">Production Order Reference</small>
+                                <div class="fs-5 fw-bold text-primary">
+                                    <i class="bi bi-gear-wide me-2"></i>@orderNoDisplay
+                                </div>
+                                <div class="small text-muted mt-1">
+                                    @(Model.ProductionOrderId.HasValue ? $"Order ID: #{Model.ProductionOrderId}" : "No order linked")
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Quantity -->
+                        <div class="col-md-4">
+                            <div class="p-3 bg-light rounded-3 border h-100">
+                                <small class="text-muted text-uppercase fw-semibold d-block mb-1">Dispatch Quantity</small>
+                                <div class="fs-4 fw-bold text-success">
+                                    @Model.DispatchQuantity.ToString("N0") <span class="fs-6 text-muted fw-normal">Units</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Dispatch Date -->
+                        <div class="col-md-4">
+                            <div class="p-3 bg-light rounded-3 border h-100">
+                                <small class="text-muted text-uppercase fw-semibold d-block mb-1">Dispatch Date & Time</small>
+                                <div class="fs-6 fw-bold text-dark">
+                                    <i class="bi bi-calendar-check me-1 text-primary"></i>@Model.DispatchDate.ToString("MMM dd, yyyy")
+                                </div>
+                                <div class="small text-muted">@Model.DispatchDate.ToString("hh:mm tt")</div>
+                            </div>
+                        </div>
+
+                        <!-- Destination -->
+                        <div class="col-md-4">
+                            <div class="p-3 bg-light rounded-3 border h-100">
+                                <small class="text-muted text-uppercase fw-semibold d-block mb-1">Destination Location</small>
+                                <div class="fs-6 fw-bold text-danger">
+                                    <i class="bi bi-geo-alt me-1"></i>@destinationDisplay
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Dispatched By -->
+                        <div class="col-md-6">
+                            <div class="p-3 bg-light rounded-3 border h-100">
+                                <small class="text-muted text-uppercase fw-semibold d-block mb-1">Dispatched By (Authorizer)</small>
+                                <div class="fs-6 fw-semibold text-dark">
+                                    <i class="bi bi-person-check me-2 text-success"></i>@dispatchedByDisplay
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Created Timestamp -->
+                        <div class="col-md-6">
+                            <div class="p-3 bg-light rounded-3 border h-100">
+                                <small class="text-muted text-uppercase fw-semibold d-block mb-1">System Creation Timestamp</small>
+                                <div class="fs-6 fw-semibold text-dark">
+                                    <i class="bi bi-clock-history me-2 text-info"></i>
+                                    @(Model.CreatedDate != DateTime.MinValue ? Model.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss") : "N/A")
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Remarks & Notes -->
+                        <div class="col-12">
+                            <div class="p-3 bg-light rounded-3 border">
+                                <small class="text-muted text-uppercase fw-semibold d-block mb-1">Remarks & Audit Notes</small>
+                                <div class="text-dark">@remarksDisplay</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-light py-3 px-4 border-top d-flex justify-content-between align-items-center text-muted small">
+                    <div>
+                        <i class="bi bi-shield-check text-success me-1"></i> Inventory Manager Control System Audit Ledger
+                    </div>
+                    <button type="button" onclick="window.print();" class="btn btn-sm btn-outline-secondary rounded-pill px-3">
+                        <i class="bi bi-printer me-1"></i> Print Ticket
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar / Action Card -->
+        <div class="col-lg-4">
+            <!-- Quick Actions Panel -->
+            <div class="card border-0 shadow-sm rounded-4 mb-4 bg-white">
+                <div class="card-header bg-white py-3 px-4 border-bottom">
+                    <h6 class="fw-bold text-dark mb-0">
+                        <i class="bi bi-lightning-charge-fill text-warning me-1"></i> Ticket Actions
+                    </h6>
+                </div>
+                <div class="card-body p-4">
+                    <div class="d-grid gap-2">
+                        <a asp-action="Edit" asp-route-id="@Model.DispatchId" class="btn btn-primary rounded-pill py-2 text-start px-3 fw-semibold">
+                            <i class="bi bi-pencil-square me-2"></i> Modify Ticket Details
+                        </a>
+                        <a asp-action="Delete" asp-route-id="@Model.DispatchId" onclick="return confirm('Are you sure you want to delete this material dispatch record?');" class="btn btn-outline-danger rounded-pill py-2 text-start px-3 fw-semibold">
+                            <i class="bi bi-trash me-2"></i> Delete Dispatch Ticket
+                        </a>
+                        <a asp-action="Create" class="btn btn-outline-success rounded-pill py-2 text-start px-3 fw-semibold">
+                            <i class="bi bi-plus-circle me-2"></i> Create New Dispatch
+                        </a>
+                        <a asp-action="Index" class="btn btn-outline-secondary rounded-pill py-2 text-start px-3">
+                            <i class="bi bi-list-columns me-2"></i> Return to Dispatch List
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Summary Meta -->
+            <div class="card border-0 shadow-sm rounded-4 bg-white p-4">
+                <h6 class="fw-bold text-dark mb-3"><i class="bi bi-info-square me-2 text-info"></i> Dispatch Metadata</h6>
+                <ul class="list-unstyled mb-0 text-muted small">
+                    <li class="mb-2 d-flex justify-content-between">
+                        <span>Dispatch ID:</span>
+                        <strong class="text-dark">#@Model.DispatchId</strong>
+                    </li>
+                    <li class="mb-2 d-flex justify-content-between">
+                        <span>Material ID:</span>
+                        <strong class="text-dark">#@Model.MaterialId</strong>
+                    </li>
+                    <li class="mb-2 d-flex justify-content-between">
+                        <span>Production Order ID:</span>
+                        <strong class="text-dark">@(Model.ProductionOrderId.HasValue ? $"#{Model.ProductionOrderId}" : "N/A")</strong>
+                    </li>
+                    <li class="d-flex justify-content-between">
+                        <span>Status:</span>
+                        <strong class="text-dark">@(string.IsNullOrEmpty(Model.Status) ? "Dispatched" : Model.Status)</strong>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>

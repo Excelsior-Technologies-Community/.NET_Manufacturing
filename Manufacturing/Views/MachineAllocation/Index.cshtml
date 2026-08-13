@@ -1,0 +1,355 @@
+@model List<Manufacturing.Models.MachineAllocation>
+
+@{
+    ViewData["Title"] = "Machine Allocations - Machine Supervisor Portal";
+
+    var allocations = Model ?? new List<Manufacturing.Models.MachineAllocation>();
+
+    int totalAllocations = allocations.Count;
+    int activeCount = allocations.Count(a => string.Equals(a.Status, "In Progress", StringComparison.OrdinalIgnoreCase) ||
+                                             string.Equals(a.Status, "Running", StringComparison.OrdinalIgnoreCase) ||
+                                             string.Equals(a.Status, "Active", StringComparison.OrdinalIgnoreCase));
+    int scheduledCount = allocations.Count(a => string.Equals(a.Status, "Allocated", StringComparison.OrdinalIgnoreCase) ||
+                                                string.Equals(a.Status, "Scheduled", StringComparison.OrdinalIgnoreCase) ||
+                                                string.Equals(a.Status, "Pending", StringComparison.OrdinalIgnoreCase));
+    int completedCount = allocations.Count(a => string.Equals(a.Status, "Completed", StringComparison.OrdinalIgnoreCase) ||
+                                                string.Equals(a.Status, "Released", StringComparison.OrdinalIgnoreCase));
+
+    string getStatusBadgeClass(string? status)
+    {
+        switch (status?.Trim().ToLower())
+        {
+            case "allocated":
+            case "scheduled":
+                return "bg-primary text-white";
+            case "in progress":
+            case "running":
+            case "active":
+                return "bg-warning text-dark";
+            case "completed":
+            case "released":
+                return "bg-success text-white";
+            case "cancelled":
+            case "rejected":
+                return "bg-danger text-white";
+            default:
+                return "bg-secondary text-white";
+        }
+    }
+}
+
+<div class="container-fluid px-4 py-4">
+    <!-- TempData Alerts -->
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show rounded-4 shadow-sm border-0 mb-4" role="alert">
+            <i class="bi bi-check-circle-fill me-2 fs-5 align-middle"></i>
+            <strong>Success!</strong> @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- Top Navigation Header Banner -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 p-4 rounded-4 shadow text-white" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0284c7 100%);">
+        <div class="mb-3 mb-md-0">
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="badge bg-info text-dark px-3 py-1 rounded-pill text-uppercase fs-7 fw-bold">Machine Supervisor Portal</span>
+                <span class="badge bg-white bg-opacity-25 text-white px-3 py-1 rounded-pill fs-7">Equipment Shift Allocation</span>
+            </div>
+            <h2 class="fw-bold mb-1 d-flex align-items-center">
+                <i class="bi bi-cpu text-info me-2 fs-2"></i> Machine Allocation Management
+            </h2>
+            <p class="text-slate-300 mb-0 opacity-85">
+                Machine Supervisor Control Hub: Schedule, monitor, and manage machine time allocations for active production orders.
+            </p>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+            <a asp-action="Create" class="btn btn-info rounded-pill px-4 py-2 shadow-sm fw-bold text-dark">
+                <i class="bi bi-plus-circle-fill me-1"></i> Allocate Machine
+            </a>
+            <button type="button" onclick="exportAllocationCSV()" class="btn btn-light rounded-pill px-4 py-2 shadow-sm fw-semibold text-dark">
+                <i class="bi bi-file-earmark-spreadsheet me-1 text-success"></i> Export CSV
+            </button>
+            <a asp-controller="Account" asp-action="Dashboard" class="btn btn-outline-light rounded-pill px-3 py-2">
+                <i class="bi bi-speedometer2 me-1"></i> Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- Machine Supervisor KPI Cards Row -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 h-100 bg-white border-start border-4 border-info">
+                <div class="card-body p-3 d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="text-muted small fw-semibold text-uppercase">Total Allocations</div>
+                        <div class="fs-3 fw-bold text-info mb-0" id="statTotalAllocations">@totalAllocations</div>
+                    </div>
+                    <div class="rounded-circle bg-info bg-opacity-10 text-info p-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                        <i class="bi bi-cpu fs-4"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 h-100 bg-white border-start border-4 border-primary">
+                <div class="card-body p-3 d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="text-muted small fw-semibold text-uppercase">Scheduled / Allocated</div>
+                        <div class="fs-3 fw-bold text-primary mb-0" id="statScheduled">@scheduledCount</div>
+                    </div>
+                    <div class="rounded-circle bg-primary bg-opacity-10 text-primary p-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                        <i class="bi bi-calendar-check fs-4"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 h-100 bg-white border-start border-4 border-warning">
+                <div class="card-body p-3 d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="text-muted small fw-semibold text-uppercase">In Progress / Running</div>
+                        <div class="fs-3 fw-bold text-warning mb-0" id="statActive">@activeCount</div>
+                    </div>
+                    <div class="rounded-circle bg-warning bg-opacity-10 text-warning p-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                        <i class="bi bi-play-circle fs-4"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 h-100 bg-white border-start border-4 border-success">
+                <div class="card-body p-3 d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="text-muted small fw-semibold text-uppercase">Completed / Released</div>
+                        <div class="fs-3 fw-bold text-success mb-0" id="statCompleted">@completedCount</div>
+                    </div>
+                    <div class="rounded-circle bg-success bg-opacity-10 text-success p-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                        <i class="bi bi-check2-circle fs-4"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Machine Allocation Ledger Card -->
+    <div class="card border-0 shadow-sm rounded-4 bg-white overflow-hidden">
+        <div class="card-header bg-white py-3 px-4 border-bottom d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+            <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-list-columns-reverse text-info fs-5"></i>
+                <h5 class="fw-bold text-dark mb-0">Equipment Allocation Roster</h5>
+                <span class="badge bg-light text-dark rounded-pill border ms-1" id="visibleRowCount">@totalAllocations Record(s)</span>
+            </div>
+
+            <!-- Toolbar Controls -->
+            <div class="d-flex flex-wrap align-items-center gap-2">
+                <!-- Search Box -->
+                <div class="input-group input-group-sm rounded-pill overflow-hidden border" style="max-width: 280px;">
+                    <span class="input-group-text bg-white border-0 ps-3">
+                        <i class="bi bi-search text-muted"></i>
+                    </span>
+                    <input type="text" id="allocationSearchInput" class="form-control border-0 shadow-none ps-1" placeholder="Search allocations..." onkeyup="filterAllocations()" />
+                </div>
+
+                <!-- Status Filter -->
+                <select id="statusFilterSelect" class="form-select form-select-sm rounded-pill border px-3" style="width: auto;" onchange="filterAllocations()">
+                    <option value="">All Statuses</option>
+                    <option value="Allocated">Allocated</option>
+                    <option value="In Progress">In Progress</option>
+                    <option value="Completed">Completed</option>
+                    <option value="Pending">Pending</option>
+                    <option value="Cancelled">Cancelled</option>
+                </select>
+
+                <button class="btn btn-sm btn-outline-secondary rounded-pill px-3" onclick="resetFilters()">
+                    <i class="bi bi-arrow-counterclockwise me-1"></i> Reset
+                </button>
+            </div>
+        </div>
+
+        <div class="card-body p-0">
+            @if (allocations.Count == 0)
+            {
+                <div class="text-center py-5">
+                    <div class="mb-3">
+                        <i class="bi bi-cpu text-muted display-4"></i>
+                    </div>
+                    <h5 class="fw-bold text-dark">No Machine Allocations Found</h5>
+                    <p class="text-muted small mb-3">There are currently no machine time allocations logged in the system.</p>
+                    <a asp-action="Create" class="btn btn-info rounded-pill px-4 py-2 fw-semibold text-dark">
+                        <i class="bi bi-plus-circle-fill me-2"></i> Allocate First Machine
+                    </a>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0" id="allocationTable">
+                        <thead class="bg-light text-muted small text-uppercase fw-semibold border-bottom">
+                            <tr>
+                                <th class="ps-4 py-3">Allocation ID</th>
+                                <th class="py-3">Equipment / Machine</th>
+                                <th class="py-3">Production Order</th>
+                                <th class="py-3">Allocation Date</th>
+                                <th class="py-3">Shift Hours</th>
+                                <th class="py-3">Allocated By</th>
+                                <th class="py-3">Status</th>
+                                <th class="pe-4 py-3 text-end">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in allocations)
+                            {
+                                var statusClass = getStatusBadgeClass(item.Status);
+                                var allocatedByText = string.IsNullOrEmpty(item.AllocatedBy) ? "Machine Supervisor" : item.AllocatedBy;
+                                var startTimeText = DateTime.Today.Add(item.StartTime).ToString("hh:mm tt");
+                                var endTimeText = item.EndTime.HasValue ? DateTime.Today.Add(item.EndTime.Value).ToString("hh:mm tt") : "Ongoing / Open";
+
+                                <tr class="allocation-row"
+                                    data-id="@item.AllocationId"
+                                    data-machine="@item.MachineName"
+                                    data-order="@item.OrderNo"
+                                    data-date="@item.AllocationDate.ToString("yyyy-MM-dd")"
+                                    data-by="@allocatedByText"
+                                    data-status="@(item.Status ?? "Allocated")"
+                                    data-search="@item.AllocationId @item.MachineName @item.OrderNo @allocatedByText @item.Status @item.Remarks">
+                                    
+                                    <td class="ps-4 py-3 fw-bold text-info">
+                                        <i class="bi bi-hash text-muted me-1"></i>ALLOC-@item.AllocationId.ToString("D4")
+                                    </td>
+                                    
+                                    <td class="py-3">
+                                        <div class="fw-bold text-dark">
+                                            <i class="bi bi-cpu me-1 text-primary"></i>@(string.IsNullOrEmpty(item.MachineName) ? $"Machine #{item.MachineId}" : item.MachineName)
+                                        </div>
+                                        <small class="text-muted">Machine ID: #@item.MachineId</small>
+                                    </td>
+
+                                    <td class="py-3">
+                                        <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-2 py-1 rounded-pill fw-medium">
+                                            <i class="bi bi-gear-wide me-1"></i>@(string.IsNullOrEmpty(item.OrderNo) ? $"PO-#{item.ProductionOrderId}" : item.OrderNo)
+                                        </span>
+                                    </td>
+
+                                    <td class="py-3">
+                                        <div class="small fw-semibold text-dark">@item.AllocationDate.ToString("MMM dd, yyyy")</div>
+                                    </td>
+
+                                    <td class="py-3">
+                                        <div class="small fw-medium text-dark">
+                                            <i class="bi bi-clock me-1 text-info"></i>@startTimeText - @endTimeText
+                                        </div>
+                                    </td>
+
+                                    <td class="py-3">
+                                        <span class="small text-dark">
+                                            <i class="bi bi-person-circle me-1 text-success"></i>@allocatedByText
+                                        </span>
+                                    </td>
+
+                                    <td class="py-3">
+                                        <span class="badge @statusClass px-3 py-1 rounded-pill fw-semibold small">
+                                            @(string.IsNullOrEmpty(item.Status) ? "Allocated" : item.Status)
+                                        </span>
+                                    </td>
+
+                                    <td class="pe-4 py-3 text-end">
+                                        <div class="btn-group" role="group">
+                                            <a asp-action="Details" asp-route-id="@item.AllocationId" class="btn btn-sm btn-outline-info rounded-start-pill" title="View Allocation Details">
+                                                <i class="bi bi-eye-fill me-1"></i> Details
+                                            </a>
+                                            <a asp-action="Edit" asp-route-id="@item.AllocationId" class="btn btn-sm btn-outline-warning" title="Edit Allocation">
+                                                <i class="bi bi-pencil-square me-1"></i> Edit
+                                            </a>
+                                            <a asp-action="Delete" asp-route-id="@item.AllocationId" class="btn btn-sm btn-outline-danger rounded-end-pill" title="Delete Allocation" onclick="return confirm('Are you sure you want to delete Machine Allocation ALLOC-@item.AllocationId.ToString("D4")?');">
+                                                <i class="bi bi-trash-fill me-1"></i> Delete
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+        <div class="card-footer bg-light py-3 px-4 border-top text-muted small d-flex justify-content-between align-items-center">
+            <div>
+                <i class="bi bi-shield-check text-success me-1"></i> Machine Supervisor Control Panel | Equipment Time Allocation Ledger
+            </div>
+            <div>
+                Total Logged Allocations: <strong class="text-dark">@totalAllocations Entry(ies)</strong>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function filterAllocations() {
+            const searchValue = document.getElementById('allocationSearchInput').value.toLowerCase().trim();
+            const statusValue = document.getElementById('statusFilterSelect').value.toLowerCase().trim();
+            const rows = document.querySelectorAll('.allocation-row');
+
+            let visibleCount = 0;
+
+            rows.forEach(row => {
+                const searchText = (row.getAttribute('data-search') || '').toLowerCase();
+                const rowStatus = (row.getAttribute('data-status') || '').toLowerCase();
+
+                const matchesSearch = !searchValue || searchText.includes(searchValue);
+                const matchesStatus = !statusValue || rowStatus.includes(statusValue);
+
+                if (matchesSearch && matchesStatus) {
+                    row.style.display = '';
+                    visibleCount++;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+
+            const visibleBadge = document.getElementById('visibleRowCount');
+            if (visibleBadge) {
+                visibleBadge.textContent = visibleCount + ' Record(s)';
+            }
+        }
+
+        function resetFilters() {
+            document.getElementById('allocationSearchInput').value = '';
+            document.getElementById('statusFilterSelect').value = '';
+            filterAllocations();
+        }
+
+        function exportAllocationCSV() {
+            const rows = document.querySelectorAll('.allocation-row');
+            if (!rows.length) {
+                alert('No allocation data available to export.');
+                return;
+            }
+
+            let csvContent = "data:text/csv;charset=utf-8,Allocation ID,Equipment Machine,Production Order,Allocation Date,Allocated By,Status\n";
+
+            rows.forEach(row => {
+                const id = row.getAttribute('data-id');
+                const machine = '"' + (row.getAttribute('data-machine') || '').replace(/"/g, '""') + '"';
+                const order = '"' + (row.getAttribute('data-order') || '').replace(/"/g, '""') + '"';
+                const date = '"' + (row.getAttribute('data-date') || '').replace(/"/g, '""') + '"';
+                const by = '"' + (row.getAttribute('data-by') || '').replace(/"/g, '""') + '"';
+                const status = '"' + (row.getAttribute('data-status') || '').replace(/"/g, '""') + '"';
+
+                csvContent += `ALLOC-${id},${machine},${order},${date},${by},${status}\n`;
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `machine_allocations_${new Date().toISOString().slice(0,10)}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    </script>
+}
