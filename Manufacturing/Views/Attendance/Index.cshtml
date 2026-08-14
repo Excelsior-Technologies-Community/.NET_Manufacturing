@@ -1,0 +1,249 @@
+@model List<Manufacturing.Models.Attendance>
+
+@{
+    ViewData["Title"] = "Employee Attendance Roster";
+
+    var attendanceList = Model ?? new List<Manufacturing.Models.Attendance>();
+    int totalCount = attendanceList.Count;
+    int presentCount = attendanceList.Count(a => (a.Status ?? "").Equals("Present", StringComparison.OrdinalIgnoreCase));
+    int absentCount = attendanceList.Count(a => (a.Status ?? "").Equals("Absent", StringComparison.OrdinalIgnoreCase));
+    int leaveCount = attendanceList.Count(a => (a.Status ?? "").Equals("On Leave", StringComparison.OrdinalIgnoreCase) || (a.Status ?? "").Equals("Late", StringComparison.OrdinalIgnoreCase) || (a.Status ?? "").Equals("Half Day", StringComparison.OrdinalIgnoreCase));
+
+    string getStatusBadge(string status)
+    {
+        switch (status?.Trim())
+        {
+            case "Present": return "bg-success text-white";
+            case "Absent": return "bg-danger text-white";
+            case "Late": return "bg-warning text-dark";
+            case "On Leave": return "bg-info text-dark";
+            case "Half Day": return "bg-primary text-white";
+            default: return "bg-secondary text-white";
+        }
+    }
+}
+
+<div class="container-fluid px-3 py-3">
+
+    <!-- Success Message Alert -->
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show rounded-4 shadow-sm border-0 mb-4" role="alert">
+            <i class="bi bi-check-circle-fill me-2 fs-5 align-middle"></i>
+            <strong>Success!</strong> @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- Header Banner -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 p-4 rounded-4 shadow-sm text-white" style="background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4338ca 100%);">
+        <div class="mb-3 mb-md-0">
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="badge bg-indigo text-white px-3 py-1 rounded-pill text-uppercase fs-7 fw-bold" style="background-color: #6366f1;">Shift Supervision</span>
+                <span class="badge bg-outline-light text-white-50 border border-white-50 px-2 py-1 rounded-pill fs-7">Attendance Control</span>
+            </div>
+            <h2 class="fw-bold mb-1 d-flex align-items-center">
+                <i class="bi bi-calendar-check text-indigo me-2 fs-2" style="color: #a5b4fc;"></i> Employee Attendance Roster
+            </h2>
+            <p class="text-slate-300 mb-0 opacity-75">Track shift attendance, check-in and check-out timestamps, employee status, and daily attendance logs</p>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+            <a asp-action="Create" class="btn btn-light rounded-pill px-4 py-2 shadow-sm fw-semibold text-indigo" style="color: #4338ca;">
+                <i class="bi bi-plus-circle-fill me-1"></i> Mark Attendance
+            </a>
+            <a asp-controller="Account" asp-action="ShiftSupervisorDashboard" class="btn btn-outline-light rounded-pill px-3 py-2">
+                <i class="bi bi-speedometer2 me-1"></i> Shift Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- KPI Metric Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 h-100 bg-white border-start border-4 border-indigo" style="border-left-color: #6366f1 !important;">
+                <div class="card-body p-3 d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="text-muted small fw-semibold text-uppercase">Total Logs</div>
+                        <div class="fs-3 fw-bold text-indigo mb-0" style="color: #4338ca;">@totalCount</div>
+                    </div>
+                    <div class="rounded-circle p-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; background-color: #e0e7ff; color: #4338ca;">
+                        <i class="bi bi-clipboard-data fs-4"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 h-100 bg-white border-start border-4 border-success">
+                <div class="card-body p-3 d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="text-muted small fw-semibold text-uppercase">Present Today</div>
+                        <div class="fs-3 fw-bold text-success mb-0">@presentCount</div>
+                    </div>
+                    <div class="rounded-circle bg-success bg-opacity-10 text-success p-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                        <i class="bi bi-person-check fs-4"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 h-100 bg-white border-start border-4 border-danger">
+                <div class="card-body p-3 d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="text-muted small fw-semibold text-uppercase">Absent</div>
+                        <div class="fs-3 fw-bold text-danger mb-0">@absentCount</div>
+                    </div>
+                    <div class="rounded-circle bg-danger bg-opacity-10 text-danger p-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                        <i class="bi bi-person-x fs-4"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 h-100 bg-white border-start border-4 border-warning">
+                <div class="card-body p-3 d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="text-muted small fw-semibold text-uppercase">Leave / Late / Half Day</div>
+                        <div class="fs-3 fw-bold text-warning mb-0">@leaveCount</div>
+                    </div>
+                    <div class="rounded-circle bg-warning bg-opacity-10 text-warning p-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                        <i class="bi bi-clock-history fs-4"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Table Card -->
+    <div class="card border-0 shadow-sm rounded-4 bg-white">
+        <div class="card-header bg-transparent border-0 pt-4 px-4 pb-2 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+            <div>
+                <h5 class="fw-bold mb-0 text-dark">
+                    <i class="bi bi-list-check me-2 text-indigo" style="color: #6366f1;"></i> Attendance Records Roster
+                </h5>
+                <small class="text-muted">Filtered list of daily employee attendance entries</small>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <div class="input-group input-group-sm" style="max-width: 300px;">
+                    <span class="input-group-text bg-light border-end-0"><i class="bi bi-search text-muted"></i></span>
+                    <input type="text" id="attendanceSearchInput" class="form-control bg-light border-start-0" placeholder="Search employee name, status...">
+                </div>
+            </div>
+        </div>
+        <div class="card-body px-4 pt-2 pb-4">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0" id="attendanceTable">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="py-3">ID</th>
+                            <th class="py-3">Employee Name</th>
+                            <th class="py-3">Date</th>
+                            <th class="py-3">Status</th>
+                            <th class="py-3">Check-In</th>
+                            <th class="py-3">Check-Out</th>
+                            <th class="py-3">Remarks</th>
+                            <th class="py-3 text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (attendanceList.Count > 0)
+                        {
+                            foreach (var item in attendanceList)
+                            {
+                                <tr class="attendance-row">
+                                    <td class="fw-bold text-secondary">#@item.AttendanceId</td>
+                                    <td class="fw-semibold text-dark">
+                                        <i class="bi bi-person-circle me-1 text-primary"></i> @item.EmployeeName
+                                    </td>
+                                    <td>
+                                        <i class="bi bi-calendar3 me-1 text-muted"></i>@item.AttendanceDate.ToString("dd MMM yyyy")
+                                    </td>
+                                    <td>
+                                        <span class="badge @getStatusBadge(item.Status) px-3 py-1 rounded-pill">
+                                            @item.Status
+                                        </span>
+                                    </td>
+                                    <td class="font-monospace small">
+                                        @(item.CheckInTime.HasValue ? DateTime.Today.Add(item.CheckInTime.Value).ToString("hh:mm tt") : "-")
+                                    </td>
+                                    <td class="font-monospace small">
+                                        @(item.CheckOutTime.HasValue ? DateTime.Today.Add(item.CheckOutTime.Value).ToString("hh:mm tt") : "-")
+                                    </td>
+                                    <td class="small text-muted text-truncate" style="max-width: 200px;">
+                                        @(string.IsNullOrEmpty(item.Remarks) ? "-" : item.Remarks)
+                                    </td>
+                                    <td class="text-end">
+                                        <div class="btn-group btn-group-sm shadow-sm rounded-pill overflow-hidden">
+                                            <a asp-action="Details" asp-route-id="@item.AttendanceId" class="btn btn-light text-info" title="View Details">
+                                                <i class="bi bi-eye-fill"></i>
+                                            </a>
+                                            <a asp-action="Edit" asp-route-id="@item.AttendanceId" class="btn btn-light text-warning" title="Edit Record">
+                                                <i class="bi bi-pencil-square"></i>
+                                            </a>
+                                            <button type="button" class="btn btn-light text-danger" title="Delete" data-bs-toggle="modal" data-bs-target="#deleteModal-@item.AttendanceId">
+                                                <i class="bi bi-trash-fill"></i>
+                                            </button>
+                                        </div>
+
+                                        <!-- Delete Confirmation Modal -->
+                                        <div class="modal fade text-start" id="deleteModal-@item.AttendanceId" tabindex="-1" aria-hidden="true">
+                                            <div class="modal-dialog modal-dialog-centered">
+                                                <div class="modal-content rounded-4 border-0 shadow">
+                                                    <div class="modal-header border-0 bg-danger bg-opacity-10">
+                                                        <h5 class="modal-title fw-bold text-danger">
+                                                            <i class="bi bi-exclamation-triangle-fill me-2"></i> Confirm Attendance Deletion
+                                                        </h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                    </div>
+                                                    <div class="modal-body p-4">
+                                                        <p class="mb-1">Are you sure you want to delete attendance record <strong>#@item.AttendanceId</strong>?</p>
+                                                        <div class="bg-light p-3 rounded-3 small">
+                                                            <div><strong>Employee:</strong> @item.EmployeeName</div>
+                                                            <div><strong>Date:</strong> @item.AttendanceDate.ToString("dd MMM yyyy")</div>
+                                                            <div><strong>Status:</strong> @item.Status</div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer border-0">
+                                                        <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                                                        <a asp-action="Delete" asp-route-id="@item.AttendanceId" class="btn btn-danger rounded-pill px-4">
+                                                            Delete Record
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="8" class="text-center py-5 text-muted">
+                                    <i class="bi bi-calendar-x fs-1 d-block mb-2 text-secondary opacity-50"></i>
+                                    No attendance records found. Click <strong>Mark Attendance</strong> above to create an entry.
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById('attendanceSearchInput')?.addEventListener('keyup', function () {
+            const query = this.value.toLowerCase();
+            const rows = document.querySelectorAll('#attendanceTable tbody tr.attendance-row');
+            rows.forEach(row => {
+                const text = row.innerText.toLowerCase();
+                row.style.display = text.includes(query) ? '' : 'none';
+            });
+        });
+    </script>
+}

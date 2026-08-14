@@ -79,6 +79,14 @@ namespace Manufacturing.Controllers
                 {
                     return RedirectToAction("ProductionManagerDashboard");
                 }
+                if (role == "Shift Supervisor")
+                {
+                    return RedirectToAction("ShiftSupervisorDashboard");
+                }
+                if (role == "Machine Manager" || role == "Machine Supervisor")
+                {
+                    return RedirectToAction("MachineManagerDashboard");
+                }
                 return RedirectToAction("Dashboard");
             }
             return View();
@@ -116,6 +124,14 @@ namespace Manufacturing.Controllers
                                 {
                                     return RedirectToAction("ProductionManagerDashboard");
                                 }
+                                if (role == "Shift Supervisor")
+                                {
+                                    return RedirectToAction("ShiftSupervisorDashboard");
+                                }
+                                if (role == "Machine Manager" || role == "Machine Supervisor")
+                                {
+                                    return RedirectToAction("MachineManagerDashboard");
+                                }
 
                                 return RedirectToAction("Dashboard");
                             }
@@ -145,6 +161,14 @@ namespace Manufacturing.Controllers
             if (sessionRole == "Production Manager")
             {
                 return RedirectToAction("ProductionManagerDashboard");
+            }
+            if (sessionRole == "Shift Supervisor")
+            {
+                return RedirectToAction("ShiftSupervisorDashboard");
+            }
+            if (sessionRole == "Machine Manager" || sessionRole == "Machine Supervisor")
+            {
+                return RedirectToAction("MachineManagerDashboard");
             }
 
             int userId = int.Parse(userIdStr);
@@ -440,6 +464,367 @@ namespace Manufacturing.Controllers
             catch (Exception ex)
             {
                 ViewBag.Error = "Error loading production manager dashboard: " + ex.Message;
+            }
+
+            return View(model);
+        }
+
+        public IActionResult ShiftSupervisorDashboard()
+        {
+            string userIdStr = HttpContext.Session.GetString("UserId");
+            if (string.IsNullOrEmpty(userIdStr))
+            {
+                return RedirectToAction("Login");
+            }
+
+            ShiftSupervisorDashboardViewModel model = new ShiftSupervisorDashboardViewModel();
+            model.SupervisorName = HttpContext.Session.GetString("FullName") ?? "Shift Supervisor";
+
+            try
+            {
+                using (SqlConnection con = new SqlConnection(cs))
+                {
+                    con.Open();
+
+                    // Load Shifts
+                    string shiftSql = "SELECT TOP 10 * FROM Shifts ORDER BY ShiftId DESC";
+                    using (SqlCommand cmd = new SqlCommand(shiftSql, con))
+                    {
+                        using (SqlDataReader dr = cmd.ExecuteReader())
+                        {
+                            while (dr.Read())
+                            {
+                                model.Shifts.Add(new Shift
+                                {
+                                    ShiftId = Convert.ToInt32(dr["ShiftId"]),
+                                    ShiftCode = dr["ShiftCode"] != DBNull.Value ? dr["ShiftCode"].ToString()! : "",
+                                    ShiftName = dr["ShiftName"] != DBNull.Value ? dr["ShiftName"].ToString()! : "",
+                                    StartTime = dr["StartTime"] != DBNull.Value ? TimeSpan.Parse(dr["StartTime"].ToString()!) : TimeSpan.Zero,
+                                    EndTime = dr["EndTime"] != DBNull.Value ? TimeSpan.Parse(dr["EndTime"].ToString()!) : TimeSpan.Zero,
+                                    TotalHours = dr["TotalHours"] != DBNull.Value ? Convert.ToDecimal(dr["TotalHours"]) : 0,
+                                    SupervisorName = dr["SupervisorName"] != DBNull.Value ? dr["SupervisorName"].ToString()! : "",
+                                    Status = dr["Status"] != DBNull.Value ? dr["Status"].ToString()! : "Active",
+                                    Description = dr["Description"] != DBNull.Value ? dr["Description"].ToString()! : "",
+                                    CreatedDate = dr["CreatedDate"] != DBNull.Value ? Convert.ToDateTime(dr["CreatedDate"]) : DateTime.Now
+                                });
+                            }
+                        }
+                    }
+
+                    // Load Operator Assignments
+                    string opSql = @"SELECT TOP 10 OA.*, PO.OrderNo, E.FullName, S.ShiftName
+                                     FROM OperatorAssignments OA
+                                     LEFT JOIN ProductionOrders PO ON OA.ProductionOrderId = PO.ProductionOrderId
+                                     LEFT JOIN Employees E ON OA.EmployeeId = E.EmployeeId
+                                     LEFT JOIN Shifts S ON OA.ShiftId = S.ShiftId
+                                     ORDER BY OA.OperatorAssignmentId DESC";
+                    using (SqlCommand cmd = new SqlCommand(opSql, con))
+                    {
+                        using (SqlDataReader dr = cmd.ExecuteReader())
+                        {
+                            while (dr.Read())
+                            {
+                                model.RecentOperatorAssignments.Add(new OperatorAssignment
+                                {
+                                    OperatorAssignmentId = Convert.ToInt32(dr["OperatorAssignmentId"]),
+                                    ProductionOrderId = Convert.ToInt32(dr["ProductionOrderId"]),
+                                    EmployeeId = Convert.ToInt32(dr["EmployeeId"]),
+                                    ShiftId = Convert.ToInt32(dr["ShiftId"]),
+                                    AssignedDate = Convert.ToDateTime(dr["AssignedDate"]),
+                                    Status = dr["Status"] != DBNull.Value ? dr["Status"].ToString() : "",
+                                    Remarks = dr["Remarks"] != DBNull.Value ? dr["Remarks"].ToString() : "",
+                                    CreatedDate = Convert.ToDateTime(dr["CreatedDate"]),
+                                    OrderNo = dr["OrderNo"] != DBNull.Value ? dr["OrderNo"].ToString() : "",
+                                    EmployeeName = dr["FullName"] != DBNull.Value ? dr["FullName"].ToString() : "",
+                                    ShiftName = dr["ShiftName"] != DBNull.Value ? dr["ShiftName"].ToString() : ""
+                                });
+                            }
+                        }
+                    }
+
+                    // Load Active Production Orders
+                    string poSql = "SELECT TOP 10 * FROM ProductionOrders ORDER BY ProductionOrderId DESC";
+                    using (SqlCommand cmd = new SqlCommand(poSql, con))
+                    {
+                        using (SqlDataReader dr = cmd.ExecuteReader())
+                        {
+                            while (dr.Read())
+                            {
+                                model.ActiveProductionOrders.Add(new ProductionOrder
+                                {
+                                    ProductionOrderId = Convert.ToInt32(dr["ProductionOrderId"]),
+                                    OrderNo = dr["OrderNo"] != DBNull.Value ? dr["OrderNo"].ToString()! : "",
+                                    ProductName = dr["ProductName"] != DBNull.Value ? dr["ProductName"].ToString()! : "",
+                                    Quantity = Convert.ToInt32(dr["Quantity"]),
+                                    Unit = dr["Unit"] != DBNull.Value ? dr["Unit"].ToString()! : "",
+                                    StartDate = dr["StartDate"] == DBNull.Value ? null : Convert.ToDateTime(dr["StartDate"]),
+                                    EndDate = dr["EndDate"] == DBNull.Value ? null : Convert.ToDateTime(dr["EndDate"]),
+                                    Priority = dr["Priority"] != DBNull.Value ? dr["Priority"].ToString()! : "",
+                                    Status = dr["Status"] != DBNull.Value ? dr["Status"].ToString()! : "Pending",
+                                    ApprovedBy = dr["ApprovedBy"] != DBNull.Value ? dr["ApprovedBy"].ToString()! : "",
+                                    Remarks = dr["Remarks"] != DBNull.Value ? dr["Remarks"].ToString()! : "",
+                                    CreatedBy = dr["CreatedBy"] != DBNull.Value ? dr["CreatedBy"].ToString()! : "",
+                                    CreatedDate = dr["CreatedDate"] == DBNull.Value ? DateTime.Now : Convert.ToDateTime(dr["CreatedDate"])
+                                });
+                            }
+                        }
+                    }
+
+                    // Load Maintenance Requests
+                    string maintSql = @"SELECT TOP 10 M.*, Mac.MachineName 
+                                        FROM MaintenanceRequests M
+                                        LEFT JOIN Machines Mac ON M.MachineId = Mac.MachineId
+                                        ORDER BY M.RequestId DESC";
+                    using (SqlCommand cmd = new SqlCommand(maintSql, con))
+                    {
+                        using (SqlDataReader dr = cmd.ExecuteReader())
+                        {
+                            while (dr.Read())
+                            {
+                                model.RecentMaintenanceRequests.Add(new MaintenanceRequest
+                                {
+                                    RequestId = Convert.ToInt32(dr["RequestId"]),
+                                    MachineId = Convert.ToInt32(dr["MachineId"]),
+                                    RequestDate = Convert.ToDateTime(dr["RequestDate"]),
+                                    ProblemDescription = dr["ProblemDescription"] != DBNull.Value ? dr["ProblemDescription"].ToString()! : "",
+                                    Priority = dr["Priority"] != DBNull.Value ? dr["Priority"].ToString()! : "",
+                                    RequestedBy = dr["RequestedBy"] != DBNull.Value ? dr["RequestedBy"].ToString()! : "",
+                                    AssignedTo = dr["AssignedTo"] != DBNull.Value ? dr["AssignedTo"].ToString()! : "",
+                                    Status = dr["Status"] != DBNull.Value ? dr["Status"].ToString()! : "",
+                                    Remarks = dr["Remarks"] != DBNull.Value ? dr["Remarks"].ToString()! : "",
+                                    CreatedDate = Convert.ToDateTime(dr["CreatedDate"]),
+                                    MachineName = dr["MachineName"] != DBNull.Value ? dr["MachineName"].ToString()! : ""
+                                });
+                            }
+                        }
+                    }
+
+                    // Counts
+                    using (SqlCommand cmd = new SqlCommand("SELECT COUNT(*) FROM Shifts", con))
+                    {
+                        model.TotalShifts = (int)cmd.ExecuteScalar();
+                    }
+                    using (SqlCommand cmd = new SqlCommand("SELECT COUNT(*) FROM Shifts WHERE Status='Active'", con))
+                    {
+                        model.ActiveShiftsCount = (int)cmd.ExecuteScalar();
+                    }
+                    using (SqlCommand cmd = new SqlCommand("SELECT COUNT(*) FROM OperatorAssignments", con))
+                    {
+                        model.OperatorAssignmentsCount = (int)cmd.ExecuteScalar();
+                    }
+                    using (SqlCommand cmd = new SqlCommand("SELECT COUNT(*) FROM MaintenanceRequests WHERE Status != 'Completed'", con))
+                    {
+                        model.PendingMaintenanceCount = (int)cmd.ExecuteScalar();
+                    }
+                    using (SqlCommand cmd = new SqlCommand("SELECT COUNT(*) FROM ProductionOrders WHERE Status='In Progress' OR Status='Approved' OR Status='Running'", con))
+                    {
+                        model.ActiveProductionOrdersCount = (int)cmd.ExecuteScalar();
+                    }
+                    using (SqlCommand cmd = new SqlCommand("SELECT COUNT(*) FROM Machines WHERE Status='Active' OR Status='Operational'", con))
+                    {
+                        model.ActiveMachinesCount = (int)cmd.ExecuteScalar();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                ViewBag.Error = "Error loading Shift Supervisor Dashboard: " + ex.Message;
+            }
+
+            return View(model);
+        }
+
+        public IActionResult MachineManagerDashboard()
+        {
+            string userIdStr = HttpContext.Session.GetString("UserId");
+            if (string.IsNullOrEmpty(userIdStr))
+            {
+                return RedirectToAction("Login");
+            }
+
+            MachineManagerDashboardViewModel model = new MachineManagerDashboardViewModel();
+            model.ManagerName = HttpContext.Session.GetString("FullName") ?? "Machine Manager";
+
+            try
+            {
+                using (SqlConnection con = new SqlConnection(cs))
+                {
+                    con.Open();
+
+                    // 1. Machines Directory Summary
+                    string macSql = "SELECT TOP 15 * FROM Machines ORDER BY MachineId DESC";
+                    using (SqlCommand cmd = new SqlCommand(macSql, con))
+                    {
+                        using (SqlDataReader dr = cmd.ExecuteReader())
+                        {
+                            while (dr.Read())
+                            {
+                                model.Machines.Add(new Machine
+                                {
+                                    MachineId = Convert.ToInt32(dr["MachineId"]),
+                                    MachineCode = dr["MachineCode"] != DBNull.Value ? dr["MachineCode"].ToString()! : "",
+                                    MachineName = dr["MachineName"] != DBNull.Value ? dr["MachineName"].ToString()! : "",
+                                    MachineType = dr["MachineType"] != DBNull.Value ? dr["MachineType"].ToString()! : "",
+                                    Manufacturer = dr["Manufacturer"] != DBNull.Value ? dr["Manufacturer"].ToString()! : "",
+                                    Status = dr["Status"] != DBNull.Value ? dr["Status"].ToString()! : "Active",
+                                    AllocationStatus = dr["AllocationStatus"] != DBNull.Value ? dr["AllocationStatus"].ToString()! : "",
+                                    AllocatedTo = dr["AllocatedTo"] != DBNull.Value ? dr["AllocatedTo"].ToString()! : "",
+                                    ApprovedBy = dr["ApprovedBy"] != DBNull.Value ? dr["ApprovedBy"].ToString()! : "",
+                                    Remarks = dr["Remarks"] != DBNull.Value ? dr["Remarks"].ToString()! : "",
+                                    CreatedDate = dr["CreatedDate"] != DBNull.Value ? Convert.ToDateTime(dr["CreatedDate"]) : DateTime.Now
+                                });
+                            }
+                        }
+                    }
+
+                    // 2. Machine Assignments
+                    string assignSql = @"SELECT TOP 10 MA.*, PO.OrderNo, M.MachineName, E.FullName
+                                         FROM MachineAssignments MA
+                                         LEFT JOIN ProductionOrders PO ON MA.ProductionOrderId = PO.ProductionOrderId
+                                         LEFT JOIN Machines M ON MA.MachineId = M.MachineId
+                                         LEFT JOIN Employees E ON MA.EmployeeId = E.EmployeeId
+                                         ORDER BY MA.AssignmentId DESC";
+                    using (SqlCommand cmd = new SqlCommand(assignSql, con))
+                    {
+                        using (SqlDataReader dr = cmd.ExecuteReader())
+                        {
+                            while (dr.Read())
+                            {
+                                model.RecentAssignments.Add(new MachineAssignment
+                                {
+                                    AssignmentId = Convert.ToInt32(dr["AssignmentId"]),
+                                    ProductionOrderId = Convert.ToInt32(dr["ProductionOrderId"]),
+                                    MachineId = Convert.ToInt32(dr["MachineId"]),
+                                    AssignedDate = dr["AssignedDate"] != DBNull.Value ? Convert.ToDateTime(dr["AssignedDate"]) : DateTime.Today,
+                                    Status = dr["Status"] != DBNull.Value ? dr["Status"].ToString() : "",
+                                    Priority = dr["Priority"] != DBNull.Value ? dr["Priority"].ToString() : "",
+                                    Remarks = dr["Remarks"] != DBNull.Value ? dr["Remarks"].ToString() : "",
+                                    OrderNo = dr["OrderNo"] != DBNull.Value ? dr["OrderNo"].ToString() : "",
+                                    MachineName = dr["MachineName"] != DBNull.Value ? dr["MachineName"].ToString() : "",
+                                    EmployeeName = dr["FullName"] != DBNull.Value ? dr["FullName"].ToString() : ""
+                                });
+                            }
+                        }
+                    }
+
+                    // 3. Maintenance Requests
+                    string maintSql = @"SELECT TOP 10 M.*, Mac.MachineName 
+                                        FROM MaintenanceRequests M
+                                        LEFT JOIN Machines Mac ON M.MachineId = Mac.MachineId
+                                        ORDER BY M.RequestId DESC";
+                    using (SqlCommand cmd = new SqlCommand(maintSql, con))
+                    {
+                        using (SqlDataReader dr = cmd.ExecuteReader())
+                        {
+                            while (dr.Read())
+                            {
+                                model.RecentMaintenanceRequests.Add(new MaintenanceRequest
+                                {
+                                    RequestId = Convert.ToInt32(dr["RequestId"]),
+                                    MachineId = Convert.ToInt32(dr["MachineId"]),
+                                    RequestDate = Convert.ToDateTime(dr["RequestDate"]),
+                                    ProblemDescription = dr["ProblemDescription"] != DBNull.Value ? dr["ProblemDescription"].ToString()! : "",
+                                    Priority = dr["Priority"] != DBNull.Value ? dr["Priority"].ToString()! : "",
+                                    RequestedBy = dr["RequestedBy"] != DBNull.Value ? dr["RequestedBy"].ToString()! : "",
+                                    AssignedTo = dr["AssignedTo"] != DBNull.Value ? dr["AssignedTo"].ToString()! : "",
+                                    Status = dr["Status"] != DBNull.Value ? dr["Status"].ToString()! : "",
+                                    Remarks = dr["Remarks"] != DBNull.Value ? dr["Remarks"].ToString()! : "",
+                                    CreatedDate = Convert.ToDateTime(dr["CreatedDate"]),
+                                    MachineName = dr["MachineName"] != DBNull.Value ? dr["MachineName"].ToString()! : ""
+                                });
+                            }
+                        }
+                    }
+
+                    // 4. Machine Allocations
+                    string allocSql = @"SELECT TOP 10 MA.*, M.MachineName, PO.OrderNo
+                                        FROM MachineAllocation MA
+                                        LEFT JOIN Machines M ON MA.MachineId = M.MachineId
+                                        LEFT JOIN ProductionOrders PO ON MA.ProductionOrderId = PO.ProductionOrderId
+                                        ORDER BY MA.AllocationId DESC";
+                    using (SqlCommand cmd = new SqlCommand(allocSql, con))
+                    {
+                        using (SqlDataReader dr = cmd.ExecuteReader())
+                        {
+                            while (dr.Read())
+                            {
+                                model.RecentAllocations.Add(new MachineAllocation
+                                {
+                                    AllocationId = Convert.ToInt32(dr["AllocationId"]),
+                                    MachineId = Convert.ToInt32(dr["MachineId"]),
+                                    ProductionOrderId = Convert.ToInt32(dr["ProductionOrderId"]),
+                                    AllocationDate = Convert.ToDateTime(dr["AllocationDate"]),
+                                    Status = dr["Status"] != DBNull.Value ? dr["Status"].ToString()! : "",
+                                    MachineName = dr["MachineName"] != DBNull.Value ? dr["MachineName"].ToString()! : "",
+                                    OrderNo = dr["OrderNo"] != DBNull.Value ? dr["OrderNo"].ToString()! : ""
+                                });
+                            }
+                        }
+                    }
+
+                    // 5. Machine Availabilities
+                    string availSql = @"SELECT TOP 10 MA.*, M.MachineName
+                                        FROM MachineAvailability MA
+                                        LEFT JOIN Machines M ON MA.MachineId = M.MachineId
+                                        ORDER BY MA.AvailabilityId DESC";
+                    using (SqlCommand cmd = new SqlCommand(availSql, con))
+                    {
+                        using (SqlDataReader dr = cmd.ExecuteReader())
+                        {
+                            while (dr.Read())
+                            {
+                                model.MachineAvailabilities.Add(new MachineAvailability
+                                {
+                                    AvailabilityId = Convert.ToInt32(dr["AvailabilityId"]),
+                                    MachineId = Convert.ToInt32(dr["MachineId"]),
+                                    AvailabilityStatus = dr["AvailabilityStatus"] != DBNull.Value ? dr["AvailabilityStatus"].ToString()! : "",
+                                    AvailableFrom = Convert.ToDateTime(dr["AvailableFrom"]),
+                                    AvailableTo = dr["AvailableTo"] == DBNull.Value ? null : Convert.ToDateTime(dr["AvailableTo"]),
+                                    CurrentStatus = dr["CurrentStatus"] != DBNull.Value ? dr["CurrentStatus"].ToString()! : "",
+                                    Remarks = dr["Remarks"] != DBNull.Value ? dr["Remarks"].ToString()! : "",
+                                    MachineName = dr["MachineName"] != DBNull.Value ? dr["MachineName"].ToString()! : ""
+                                });
+                            }
+                        }
+                    }
+
+                    // Aggregated Counts
+                    using (SqlCommand cmd = new SqlCommand("SELECT COUNT(*) FROM Machines", con))
+                    {
+                        model.TotalMachinesCount = (int)cmd.ExecuteScalar();
+                    }
+                    using (SqlCommand cmd = new SqlCommand("SELECT COUNT(*) FROM Machines WHERE Status='Active' OR Status='Operational'", con))
+                    {
+                        model.ActiveMachinesCount = (int)cmd.ExecuteScalar();
+                    }
+                    using (SqlCommand cmd = new SqlCommand("SELECT COUNT(*) FROM Machines WHERE Status='Under Maintenance' OR Status='Maintenance'", con))
+                    {
+                        model.MaintenanceMachinesCount = (int)cmd.ExecuteScalar();
+                    }
+                    model.InactiveMachinesCount = model.TotalMachinesCount - model.ActiveMachinesCount - model.MaintenanceMachinesCount;
+                    if (model.InactiveMachinesCount < 0) model.InactiveMachinesCount = 0;
+
+                    using (SqlCommand cmd = new SqlCommand("SELECT COUNT(*) FROM MachineAssignments", con))
+                    {
+                        model.TotalAssignmentsCount = (int)cmd.ExecuteScalar();
+                    }
+                    using (SqlCommand cmd = new SqlCommand("SELECT COUNT(*) FROM MachineAllocation", con))
+                    {
+                        model.TotalAllocationsCount = (int)cmd.ExecuteScalar();
+                    }
+                    using (SqlCommand cmd = new SqlCommand("SELECT COUNT(*) FROM MaintenanceRequests WHERE Status='Pending' OR Status='Requested'", con))
+                    {
+                        model.PendingMaintenanceCount = (int)cmd.ExecuteScalar();
+                    }
+                    using (SqlCommand cmd = new SqlCommand("SELECT COUNT(*) FROM MaintenanceRequests WHERE Status='In Progress' OR Status='Assigned'", con))
+                    {
+                        model.InProgressMaintenanceCount = (int)cmd.ExecuteScalar();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                ViewBag.Error = "Error loading Machine Manager Dashboard: " + ex.Message;
             }
 
             return View(model);

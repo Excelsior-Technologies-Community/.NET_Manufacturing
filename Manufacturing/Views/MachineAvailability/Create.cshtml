@@ -1,0 +1,158 @@
+@model Manufacturing.Models.MachineAvailability
+
+@{
+    ViewData["Title"] = "Add Machine Availability - Machine Manager Portal";
+
+    var machineList = ViewBag.MachineList as IEnumerable<SelectListItem> ?? new List<SelectListItem>();
+}
+
+<div class="container-fluid px-4 py-4">
+    <!-- Header Banner -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 p-4 rounded-4 shadow text-white" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0284c7 100%);">
+        <div class="mb-3 mb-md-0">
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="badge bg-info text-dark px-3 py-1 rounded-pill text-uppercase fs-7 fw-bold">Machine Manager Portal</span>
+                <span class="badge bg-white bg-opacity-25 text-white px-3 py-1 rounded-pill fs-7">Availability Logging</span>
+            </div>
+            <h2 class="fw-bold mb-1 d-flex align-items-center">
+                <i class="bi bi-plus-circle-fill text-info me-2 fs-2"></i> Log Machine Availability Window
+            </h2>
+            <p class="text-slate-300 mb-0 opacity-85">
+                Define equipment availability schedules, active operating windows, and maintenance slots.
+            </p>
+        </div>
+        <div>
+            <a asp-action="Index" class="btn btn-outline-light rounded-pill px-4 py-2 shadow-sm fw-semibold">
+                <i class="bi bi-arrow-left me-1"></i> Back to Availability List
+            </a>
+        </div>
+    </div>
+
+    <!-- Main Card Container -->
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-10 col-xl-8">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                <div class="card-header bg-white py-3 px-4 border-bottom">
+                    <h5 class="fw-bold mb-0 text-dark d-flex align-items-center">
+                        <i class="bi bi-clock-history text-primary me-2"></i> Availability Schedule Entry Form
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <form asp-action="Create" method="post" id="createAvailabilityForm">
+                        <!-- Hidden input for MachineName to satisfy model validation -->
+                        <input type="hidden" asp-for="MachineName" value="@(Model?.MachineName ?? "N/A")" />
+
+                        <div class="row g-4">
+                            <!-- Machine Selection -->
+                            <div class="col-md-6">
+                                <label asp-for="MachineId" class="form-label fw-semibold text-dark">
+                                    Machine <span class="text-danger">*</span>
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-end-0">
+                                        <i class="bi bi-cpu text-info"></i>
+                                    </span>
+                                    <select asp-for="MachineId" asp-items="machineList" class="form-select border-start-0 py-2">
+                                        <option value="">-- Select Machine --</option>
+                                    </select>
+                                </div>
+                                <span asp-validation-for="MachineId" class="text-danger fs-7"></span>
+                            </div>
+
+                            <!-- Availability Status -->
+                            <div class="col-md-6">
+                                <label asp-for="AvailabilityStatus" class="form-label fw-semibold text-dark">
+                                    Availability Status
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-end-0">
+                                        <i class="bi bi-shield-check text-success"></i>
+                                    </span>
+                                    <select asp-for="AvailabilityStatus" class="form-select border-start-0 py-2">
+                                        <option value="Available">Available</option>
+                                        <option value="Allocated">Allocated</option>
+                                        <option value="Reserved">Reserved</option>
+                                        <option value="Maintenance">Maintenance</option>
+                                        <option value="Breakdown">Breakdown</option>
+                                    </select>
+                                </div>
+                                <span asp-validation-for="AvailabilityStatus" class="text-danger fs-7"></span>
+                            </div>
+
+                            <!-- Available From -->
+                            <div class="col-md-6">
+                                <label asp-for="AvailableFrom" class="form-label fw-semibold text-dark">
+                                    Available From <span class="text-danger">*</span>
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-end-0">
+                                        <i class="bi bi-calendar-event text-success"></i>
+                                    </span>
+                                    <input asp-for="AvailableFrom" type="datetime-local" class="form-control border-start-0 py-2" value="@(Model != null && Model.AvailableFrom != default && Model.AvailableFrom != DateTime.MinValue ? Model.AvailableFrom.ToString("yyyy-MM-ddTHH:mm") : DateTime.Now.ToString("yyyy-MM-ddTHH:mm"))" />
+                                </div>
+                                <span asp-validation-for="AvailableFrom" class="text-danger fs-7"></span>
+                            </div>
+
+                            <!-- Available To -->
+                            <div class="col-md-6">
+                                <label asp-for="AvailableTo" class="form-label fw-semibold text-dark">
+                                    Available To (Optional)
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-end-0">
+                                        <i class="bi bi-calendar-check text-primary"></i>
+                                    </span>
+                                    <input asp-for="AvailableTo" type="datetime-local" class="form-control border-start-0 py-2" value="@(Model != null && Model.AvailableTo.HasValue ? Model.AvailableTo.Value.ToString("yyyy-MM-ddTHH:mm") : "")" />
+                                </div>
+                                <span asp-validation-for="AvailableTo" class="text-danger fs-7"></span>
+                            </div>
+
+                            <!-- Current Status -->
+                            <div class="col-md-6">
+                                <label asp-for="CurrentStatus" class="form-label fw-semibold text-dark">
+                                    Current Operational Status
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-end-0">
+                                        <i class="bi bi-activity text-warning"></i>
+                                    </span>
+                                    <select asp-for="CurrentStatus" class="form-select border-start-0 py-2">
+                                        <option value="Active">Active</option>
+                                        <option value="Scheduled">Scheduled</option>
+                                        <option value="Pending">Pending</option>
+                                        <option value="Completed">Completed</option>
+                                        <option value="Inactive">Inactive</option>
+                                    </select>
+                                </div>
+                                <span asp-validation-for="CurrentStatus" class="text-danger fs-7"></span>
+                            </div>
+
+                            <!-- Remarks -->
+                            <div class="col-12">
+                                <label asp-for="Remarks" class="form-label fw-semibold text-dark">
+                                    Remarks / Schedule Notes
+                                </label>
+                                <textarea asp-for="Remarks" rows="4" class="form-control py-2" placeholder="Enter availability window highlights, planned shift notes, or maintenance reason..."></textarea>
+                                <span asp-validation-for="Remarks" class="text-danger fs-7"></span>
+                            </div>
+                        </div>
+
+                        <!-- Form Actions Footer -->
+                        <div class="d-flex justify-content-end gap-3 mt-4 pt-3 border-top">
+                            <a asp-action="Index" class="btn btn-outline-secondary rounded-pill px-4 py-2 fw-semibold">
+                                Cancel
+                            </a>
+                            <button type="submit" class="btn btn-info text-dark rounded-pill px-5 py-2 fw-bold shadow-sm">
+                                <i class="bi bi-check-circle-fill me-1"></i> Save Availability
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

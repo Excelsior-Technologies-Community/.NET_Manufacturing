@@ -16,6 +16,7 @@
         {
             case "Admin": return "bg-danger text-white";
             case "Production Manager": return "bg-primary text-white";
+            case "Machine Manager": return "bg-info text-dark";
             case "Inventory Manager": return "bg-warning text-dark";
             case "Machine Supervisor": return "bg-info text-dark";
             case "Shift Supervisor": return "bg-secondary text-white";
@@ -55,7 +56,7 @@
                             <i class="bi bi-list fs-4"></i>
                         </button>
 
-                        <a class="navbar-brand fw-bold text-white fs-4 d-flex align-items-center mb-0" asp-area="" asp-controller="Account" asp-action="@(sessionRole == "Production Manager" ? "ProductionManagerDashboard" : "Dashboard")">
+                        <a class="navbar-brand fw-bold text-white fs-4 d-flex align-items-center mb-0" asp-area="" asp-controller="Account" asp-action="@(sessionRole == "Production Manager" ? "ProductionManagerDashboard" : sessionRole == "Shift Supervisor" ? "ShiftSupervisorDashboard" : (sessionRole == "Machine Manager" || sessionRole == "Machine Supervisor") ? "MachineManagerDashboard" : "Dashboard")">
                             <i class="bi bi-gear-wide-connected text-primary me-2 fs-3"></i> Manufacturing Portal
                         </a>
                     </div>
@@ -75,7 +76,7 @@
                                     <small class="text-muted">@@@sessionUsername (@sessionRole)</small>
                                 </li>
                                 <li>
-                                    <a class="dropdown-item py-2" asp-controller="Account" asp-action="@(sessionRole == "Production Manager" ? "ProductionManagerDashboard" : "Dashboard")">
+                                    <a class="dropdown-item py-2" asp-controller="Account" asp-action="@(sessionRole == "Production Manager" ? "ProductionManagerDashboard" : sessionRole == "Shift Supervisor" ? "ShiftSupervisorDashboard" : (sessionRole == "Machine Manager" || sessionRole == "Machine Supervisor") ? "MachineManagerDashboard" : "Dashboard")">
                                         <i class="bi bi-speedometer2 me-2 text-primary"></i> Dashboard
                                     </a>
                                 </li>
@@ -154,6 +155,21 @@
                                     </a>
                                 </li>
                                 <li>
+                                    <a class="dropdown-item py-2" asp-controller="MachineRelease" asp-action="Index">
+                                        <i class="bi bi-box-arrow-up-right me-2 text-teal" style="color: #0d9488;"></i> Machine Releases
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item py-2" asp-controller="MachineAvailability" asp-action="Index">
+                                        <i class="bi bi-clock-history me-2 text-info"></i> Machine Availability
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item py-2" asp-controller="MaintenanceRequest" asp-action="Index">
+                                        <i class="bi bi-tools me-2 text-danger"></i> Maintenance Requests
+                                    </a>
+                                </li>
+                                <li>
                                     <a class="dropdown-item py-2" asp-controller="OperatorAssignment" asp-action="Index">
                                         <i class="bi bi-person-badge-fill me-2 text-indigo" style="color: #6366f1;"></i> Operator Assignments
                                     </a>
@@ -191,6 +207,16 @@
                                 <li>
                                     <a class="dropdown-item py-2" asp-controller="StockVerification" asp-action="Index">
                                         <i class="bi bi-clipboard-check-fill me-2 text-indigo" style="color: #6366f1;"></i> Stock Verification Audit
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item py-2" asp-controller="Attendance" asp-action="Index">
+                                        <i class="bi bi-calendar-check me-2 text-indigo" style="color: #6366f1;"></i> Attendance Roster
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item py-2" asp-controller="LeaveApproval" asp-action="Index">
+                                        <i class="bi bi-calendar-event me-2 text-warning"></i> Leave Approvals
                                     </a>
                                 </li>
                                 <li><hr class="dropdown-divider"></li>
@@ -272,6 +298,36 @@
                             <li>
                                 <a class="sidebar-link @(currentController == "MachineAllocation" && currentAction == "Create" ? "active" : "")" asp-controller="MachineAllocation" asp-action="Create">
                                     <i class="bi bi-plus-circle-fill text-success"></i> Allocate Machine
+                                </a>
+                            </li>
+                            <li>
+                                <a class="sidebar-link @(currentController == "MachineRelease" && currentAction == "Index" ? "active" : "")" asp-controller="MachineRelease" asp-action="Index">
+                                    <i class="bi bi-box-arrow-up-right text-teal" style="color: #0d9488;"></i> Machine Releases
+                                </a>
+                            </li>
+                            <li>
+                                <a class="sidebar-link @(currentController == "MachineRelease" && currentAction == "Create" ? "active" : "")" asp-controller="MachineRelease" asp-action="Create">
+                                    <i class="bi bi-plus-circle-fill text-success"></i> Release Machine
+                                </a>
+                            </li>
+                            <li>
+                                <a class="sidebar-link @(currentController == "MachineAvailability" && currentAction == "Index" ? "active" : "")" asp-controller="MachineAvailability" asp-action="Index">
+                                    <i class="bi bi-clock-history text-info"></i> Machine Availability
+                                </a>
+                            </li>
+                            <li>
+                                <a class="sidebar-link @(currentController == "MachineAvailability" && currentAction == "Create" ? "active" : "")" asp-controller="MachineAvailability" asp-action="Create">
+                                    <i class="bi bi-plus-circle-fill text-success"></i> Log Availability
+                                </a>
+                            </li>
+                            <li>
+                                <a class="sidebar-link @(currentController == "MaintenanceRequest" && currentAction == "Index" ? "active" : "")" asp-controller="MaintenanceRequest" asp-action="Index">
+                                    <i class="bi bi-tools text-danger"></i> Maintenance Requests
+                                </a>
+                            </li>
+                            <li>
+                                <a class="sidebar-link @(currentController == "MaintenanceRequest" && currentAction == "Create" ? "active" : "")" asp-controller="MaintenanceRequest" asp-action="Create">
+                                    <i class="bi bi-plus-circle-fill text-success"></i> Log Maintenance
                                 </a>
                             </li>
                             <li>
@@ -477,6 +533,207 @@
                             </li>
                         </ul>
                     }
+                    else if (sessionRole == "Shift Supervisor")
+                    {
+                        <!-- Shift Supervisor Dedicated Navigation Sidebar -->
+                        <div class="sidebar-section-title">Supervisor Navigation</div>
+                        <ul class="sidebar-nav">
+                            <li>
+                                <a class="sidebar-link @(currentController == "Account" && currentAction == "ShiftSupervisorDashboard" ? "active" : "")" asp-controller="Account" asp-action="ShiftSupervisorDashboard">
+                                    <i class="bi bi-speedometer2 text-indigo" style="color: #6366f1;"></i> Shift Dashboard
+                                </a>
+                            </li>
+                            <li>
+                                <a class="sidebar-link @(currentController == "Home" ? "active" : "")" asp-controller="Home" asp-action="Index">
+                                    <i class="bi bi-house-door text-info"></i> Home Page
+                                </a>
+                            </li>
+                        </ul>
+
+                        <div class="sidebar-section-title mt-3">Shift Management</div>
+                        <ul class="sidebar-nav">
+                            <li>
+                                <a class="sidebar-link @(currentController == "Shift" && currentAction == "Index" ? "active" : "")" asp-controller="Shift" asp-action="Index">
+                                    <i class="bi bi-clock-history text-info"></i> Shift Roster
+                                </a>
+                            </li>
+                            <li>
+                                <a class="sidebar-link @(currentController == "Shift" && currentAction == "Create" ? "active" : "")" asp-controller="Shift" asp-action="Create">
+                                    <i class="bi bi-plus-circle-fill text-success"></i> Create New Shift
+                                </a>
+                            </li>
+                        </ul>
+
+                        <div class="sidebar-section-title mt-3">Operator & Machine Operations</div>
+                        <ul class="sidebar-nav">
+                            <li>
+                                <a class="sidebar-link @(currentController == "OperatorAssignment" && currentAction == "Index" ? "active" : "")" asp-controller="OperatorAssignment" asp-action="Index">
+                                    <i class="bi bi-person-badge-fill text-primary"></i> Operator Assignments
+                                </a>
+                            </li>
+                            <li>
+                                <a class="sidebar-link @(currentController == "OperatorAssignment" && currentAction == "Create" ? "active" : "")" asp-controller="OperatorAssignment" asp-action="Create">
+                                    <i class="bi bi-person-plus-fill text-success"></i> Assign Operator
+                                </a>
+                            </li>
+                            <li>
+                                <a class="sidebar-link @(currentController == "MachineAssignment" && currentAction == "Index" ? "active" : "")" asp-controller="MachineAssignment" asp-action="Index">
+                                    <i class="bi bi-cpu-fill text-warning"></i> Machine Assignments
+                                </a>
+                            </li>
+                            <li>
+                                <a class="sidebar-link @(currentController == "MachineAllocation" && currentAction == "Index" ? "active" : "")" asp-controller="MachineAllocation" asp-action="Index">
+                                    <i class="bi bi-cpu text-info"></i> Machine Allocations
+                                </a>
+                            </li>
+                            <li>
+                                <a class="sidebar-link @(currentController == "MachineAvailability" && currentAction == "Index" ? "active" : "")" asp-controller="MachineAvailability" asp-action="Index">
+                                    <i class="bi bi-clock-history text-teal" style="color: #0d9488;"></i> Machine Availability
+                                </a>
+                            </li>
+                        </ul>
+
+                        <div class="sidebar-section-title mt-3">Maintenance & Production</div>
+                        <ul class="sidebar-nav">
+                            <li>
+                                <a class="sidebar-link @(currentController == "MaintenanceRequest" && currentAction == "Index" ? "active" : "")" asp-controller="MaintenanceRequest" asp-action="Index">
+                                    <i class="bi bi-tools text-danger"></i> Maintenance Requests
+                                </a>
+                            </li>
+                            <li>
+                                <a class="sidebar-link @(currentController == "MaintenanceRequest" && currentAction == "Create" ? "active" : "")" asp-controller="MaintenanceRequest" asp-action="Create">
+                                    <i class="bi bi-plus-circle-fill text-success"></i> Log Maintenance
+                                </a>
+                            </li>
+                            <li>
+                                <a class="sidebar-link @(currentController == "ProductionManagement" && currentAction == "Index" ? "active" : "")" asp-controller="ProductionManagement" asp-action="Index">
+                                    <i class="bi bi-gear-wide-connected text-primary"></i> Production Orders
+                                </a>
+                            </li>
+                            <li>
+                                <a class="sidebar-link @(currentController == "ProductionSchedule" && currentAction == "Index" ? "active" : "")" asp-controller="ProductionSchedule" asp-action="Index">
+                                    <i class="bi bi-calendar-week-fill text-primary"></i> Production Schedules
+                                </a>
+                            </li>
+                        </ul>
+
+                        <div class="sidebar-section-title mt-3">Attendance Supervision</div>
+                        <ul class="sidebar-nav">
+                            <li>
+                                <a class="sidebar-link @(currentController == "Attendance" && currentAction == "Index" ? "active" : "")" asp-controller="Attendance" asp-action="Index">
+                                    <i class="bi bi-calendar-check text-indigo" style="color: #6366f1;"></i> Employee Attendance
+                                </a>
+                            </li>
+                            <li>
+                                <a class="sidebar-link @(currentController == "Attendance" && currentAction == "Create" ? "active" : "")" asp-controller="Attendance" asp-action="Create">
+                                    <i class="bi bi-plus-circle-fill text-success"></i> Mark Attendance
+                                </a>
+                            </li>
+                        </ul>
+
+                        <div class="sidebar-section-title mt-3">Leave & Time-Off Management</div>
+                        <ul class="sidebar-nav">
+                            <li>
+                                <a class="sidebar-link @(currentController == "LeaveApproval" && currentAction == "Index" ? "active" : "")" asp-controller="LeaveApproval" asp-action="Index">
+                                    <i class="bi bi-calendar-event text-warning"></i> Leave Approvals
+                                </a>
+                            </li>
+                            <li>
+                                <a class="sidebar-link @(currentController == "LeaveApproval" && currentAction == "Create" ? "active" : "")" asp-controller="LeaveApproval" asp-action="Create">
+                                    <i class="bi bi-plus-circle-fill text-success"></i> New Leave Request
+                                </a>
+                            </li>
+                        </ul>
+                    }
+                    else if (sessionRole == "Machine Manager" || sessionRole == "Machine Supervisor")
+                    {
+                        <!-- Machine Manager Dedicated Navigation Sidebar -->
+                        <div class="sidebar-section-title">Machine Navigation</div>
+                        <ul class="sidebar-nav">
+                            <li>
+                                <a class="sidebar-link @(currentController == "Account" && currentAction == "MachineManagerDashboard" ? "active" : "")" asp-controller="Account" asp-action="MachineManagerDashboard">
+                                    <i class="bi bi-speedometer2 text-info"></i> Machine Dashboard
+                                </a>
+                            </li>
+                            <li>
+                                <a class="sidebar-link @(currentController == "Home" ? "active" : "")" asp-controller="Home" asp-action="Index">
+                                    <i class="bi bi-house-door text-info"></i> Home Page
+                                </a>
+                            </li>
+                        </ul>
+
+                        <div class="sidebar-section-title mt-3">Machine Management</div>
+                        <ul class="sidebar-nav">
+                            <li>
+                                <a class="sidebar-link @(currentController == "Machine" && currentAction == "Index" ? "active" : "")" asp-controller="Machine" asp-action="Index">
+                                    <i class="bi bi-cpu-fill text-info"></i> Machine Directory
+                                </a>
+                            </li>
+                            <li>
+                                <a class="sidebar-link @(currentController == "Machine" && currentAction == "Create" ? "active" : "")" asp-controller="Machine" asp-action="Create">
+                                    <i class="bi bi-plus-circle-fill text-success"></i> Add New Machine
+                                </a>
+                            </li>
+                            <li>
+                                <a class="sidebar-link @(currentController == "MachineAssignment" && currentAction == "Index" ? "active" : "")" asp-controller="MachineAssignment" asp-action="Index">
+                                    <i class="bi bi-cpu-fill text-warning"></i> Machine Assignments
+                                </a>
+                            </li>
+                            <li>
+                                <a class="sidebar-link @(currentController == "MachineAssignment" && currentAction == "Create" ? "active" : "")" asp-controller="MachineAssignment" asp-action="Create">
+                                    <i class="bi bi-plus-circle-fill text-success"></i> Assign Machine
+                                </a>
+                            </li>
+                            <li>
+                                <a class="sidebar-link @(currentController == "MachineAllocation" && currentAction == "Index" ? "active" : "")" asp-controller="MachineAllocation" asp-action="Index">
+                                    <i class="bi bi-cpu text-info"></i> Machine Allocations
+                                </a>
+                            </li>
+                            <li>
+                                <a class="sidebar-link @(currentController == "MachineAllocation" && currentAction == "Create" ? "active" : "")" asp-controller="MachineAllocation" asp-action="Create">
+                                    <i class="bi bi-plus-circle-fill text-success"></i> Allocate Machine
+                                </a>
+                            </li>
+                            <li>
+                                <a class="sidebar-link @(currentController == "MachineRelease" && currentAction == "Index" ? "active" : "")" asp-controller="MachineRelease" asp-action="Index">
+                                    <i class="bi bi-box-arrow-up-right text-teal" style="color: #0d9488;"></i> Machine Releases
+                                </a>
+                            </li>
+                            <li>
+                                <a class="sidebar-link @(currentController == "MachineAvailability" && currentAction == "Index" ? "active" : "")" asp-controller="MachineAvailability" asp-action="Index">
+                                    <i class="bi bi-clock-history text-info"></i> Machine Availability Logs
+                                </a>
+                            </li>
+                        </ul>
+
+                        <div class="sidebar-section-title mt-3">Maintenance & Repairs</div>
+                        <ul class="sidebar-nav">
+                            <li>
+                                <a class="sidebar-link @(currentController == "MaintenanceRequest" && currentAction == "Index" ? "active" : "")" asp-controller="MaintenanceRequest" asp-action="Index">
+                                    <i class="bi bi-tools text-danger"></i> Maintenance Requests
+                                </a>
+                            </li>
+                            <li>
+                                <a class="sidebar-link @(currentController == "MaintenanceRequest" && currentAction == "Create" ? "active" : "")" asp-controller="MaintenanceRequest" asp-action="Create">
+                                    <i class="bi bi-plus-circle-fill text-success"></i> Log Maintenance
+                                </a>
+                            </li>
+                        </ul>
+
+                        <div class="sidebar-section-title mt-3">Operator Operations</div>
+                        <ul class="sidebar-nav">
+                            <li>
+                                <a class="sidebar-link @(currentController == "OperatorAssignment" && currentAction == "Index" ? "active" : "")" asp-controller="OperatorAssignment" asp-action="Index">
+                                    <i class="bi bi-person-badge-fill text-primary"></i> Operator Assignments
+                                </a>
+                            </li>
+                            <li>
+                                <a class="sidebar-link @(currentController == "OperatorAssignment" && currentAction == "Create" ? "active" : "")" asp-controller="OperatorAssignment" asp-action="Create">
+                                    <i class="bi bi-person-plus-fill text-success"></i> Assign Operator
+                                </a>
+                            </li>
+                        </ul>
+                    }
                     else
                     {
                         <!-- Admin & Master Navigation Sidebar -->
@@ -524,6 +781,36 @@
                             <li>
                                 <a class="sidebar-link @(currentController == "MachineAllocation" && currentAction == "Create" ? "active" : "")" asp-controller="MachineAllocation" asp-action="Create">
                                     <i class="bi bi-plus-circle-fill text-success"></i> New Machine Allocation
+                                </a>
+                            </li>
+                            <li>
+                                <a class="sidebar-link @(currentController == "MachineRelease" && currentAction == "Index" ? "active" : "")" asp-controller="MachineRelease" asp-action="Index">
+                                    <i class="bi bi-box-arrow-up-right text-teal" style="color: #0d9488;"></i> Machine Releases
+                                </a>
+                            </li>
+                            <li>
+                                <a class="sidebar-link @(currentController == "MachineRelease" && currentAction == "Create" ? "active" : "")" asp-controller="MachineRelease" asp-action="Create">
+                                    <i class="bi bi-plus-circle-fill text-success"></i> New Machine Release
+                                </a>
+                            </li>
+                            <li>
+                                <a class="sidebar-link @(currentController == "MachineAvailability" && currentAction == "Index" ? "active" : "")" asp-controller="MachineAvailability" asp-action="Index">
+                                    <i class="bi bi-clock-history text-info"></i> Machine Availability
+                                </a>
+                            </li>
+                            <li>
+                                <a class="sidebar-link @(currentController == "MachineAvailability" && currentAction == "Create" ? "active" : "")" asp-controller="MachineAvailability" asp-action="Create">
+                                    <i class="bi bi-plus-circle-fill text-success"></i> New Availability Log
+                                </a>
+                            </li>
+                            <li>
+                                <a class="sidebar-link @(currentController == "MaintenanceRequest" && currentAction == "Index" ? "active" : "")" asp-controller="MaintenanceRequest" asp-action="Index">
+                                    <i class="bi bi-tools text-danger"></i> Maintenance Requests
+                                </a>
+                            </li>
+                            <li>
+                                <a class="sidebar-link @(currentController == "MaintenanceRequest" && currentAction == "Create" ? "active" : "")" asp-controller="MaintenanceRequest" asp-action="Create">
+                                    <i class="bi bi-plus-circle-fill text-success"></i> New Maintenance Request
                                 </a>
                             </li>
                             <li>
@@ -650,6 +937,21 @@
                             <li>
                                 <a class="sidebar-link @(currentController == "Machine" && currentAction == "Create" ? "active" : "")" asp-controller="Machine" asp-action="Create">
                                     <i class="bi bi-plus-circle-fill text-success"></i> Add New Machine
+                                </a>
+                            </li>
+                            <li>
+                                <a class="sidebar-link @(currentController == "MachineRelease" && currentAction == "Index" ? "active" : "")" asp-controller="MachineRelease" asp-action="Index">
+                                    <i class="bi bi-box-arrow-up-right text-teal" style="color: #0d9488;"></i> Machine Releases
+                                </a>
+                            </li>
+                            <li>
+                                <a class="sidebar-link @(currentController == "MachineAvailability" && currentAction == "Index" ? "active" : "")" asp-controller="MachineAvailability" asp-action="Index">
+                                    <i class="bi bi-clock-history text-info"></i> Machine Availability
+                                </a>
+                            </li>
+                            <li>
+                                <a class="sidebar-link @(currentController == "MaintenanceRequest" && currentAction == "Index" ? "active" : "")" asp-controller="MaintenanceRequest" asp-action="Index">
+                                    <i class="bi bi-tools text-danger"></i> Maintenance Requests
                                 </a>
                             </li>
                         </ul>

@@ -1,0 +1,134 @@
+@model Manufacturing.Models.Attendance
+
+@{
+    ViewData["Title"] = "Mark Employee Attendance";
+}
+
+<div class="container-fluid px-3 py-3">
+    <!-- Header Banner -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 p-4 rounded-4 shadow-sm text-white" style="background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4338ca 100%);">
+        <div class="mb-3 mb-md-0">
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="badge bg-indigo text-white px-3 py-1 rounded-pill text-uppercase fs-7 fw-bold" style="background-color: #6366f1;">Attendance Roster</span>
+                <span class="badge bg-outline-light text-white-50 border border-white-50 px-2 py-1 rounded-pill fs-7">Mark Attendance</span>
+            </div>
+            <h2 class="fw-bold mb-1 d-flex align-items-center">
+                <i class="bi bi-calendar-plus text-indigo me-2 fs-2" style="color: #a5b4fc;"></i> Mark Employee Attendance
+            </h2>
+            <p class="text-slate-300 mb-0 opacity-75">Log employee shift status, arrival check-in, and departure check-out times</p>
+        </div>
+        <div>
+            <a asp-action="Index" class="btn btn-outline-light rounded-pill px-4 py-2">
+                <i class="bi bi-arrow-left me-1"></i> Back to Attendance List
+            </a>
+        </div>
+    </div>
+
+    <!-- Main Card Form -->
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-xl-7">
+            <div class="card border-0 shadow-sm rounded-4 bg-white overflow-hidden">
+                <div class="card-header bg-transparent border-0 pt-4 px-4 pb-2">
+                    <h5 class="fw-bold text-dark mb-0">
+                        <i class="bi bi-clock-history me-2 text-indigo" style="color: #6366f1;"></i> Attendance Entry Form
+                    </h5>
+                    <small class="text-muted">Enter employee details and status below</small>
+                </div>
+                <div class="card-body p-4">
+                    <form asp-action="Create" method="post">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger rounded-3 mb-4"></div>
+
+                        <!-- Employee Select -->
+                        <div class="mb-3">
+                            <label asp-for="EmployeeId" class="form-label fw-semibold text-dark">
+                                Select Employee <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light"><i class="bi bi-person-fill text-indigo" style="color: #6366f1;"></i></span>
+                                <select asp-for="EmployeeId" class="form-select" asp-items="@ViewBag.EmployeeList" required>
+                                    <option value="">-- Select Employee --</option>
+                                </select>
+                            </div>
+                            <span asp-validation-for="EmployeeId" class="text-danger fs-8"></span>
+                        </div>
+
+                        <!-- Attendance Date -->
+                        <div class="mb-3">
+                            <label asp-for="AttendanceDate" class="form-label fw-semibold text-dark">
+                                Attendance Date <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light"><i class="bi bi-calendar3 text-indigo" style="color: #6366f1;"></i></span>
+                                <input asp-for="AttendanceDate" type="date" class="form-control" value="@DateTime.Today.ToString("yyyy-MM-dd")" required />
+                            </div>
+                            <span asp-validation-for="AttendanceDate" class="text-danger fs-8"></span>
+                        </div>
+
+                        <!-- Status Dropdown -->
+                        <div class="mb-3">
+                            <label asp-for="Status" class="form-label fw-semibold text-dark">
+                                Attendance Status <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light"><i class="bi bi-check-circle-fill text-indigo" style="color: #6366f1;"></i></span>
+                                <select asp-for="Status" class="form-select" required>
+                                    <option value="Present">Present</option>
+                                    <option value="Absent">Absent</option>
+                                    <option value="Late">Late</option>
+                                    <option value="On Leave">On Leave</option>
+                                    <option value="Half Day">Half Day</option>
+                                </select>
+                            </div>
+                            <span asp-validation-for="Status" class="text-danger fs-8"></span>
+                        </div>
+
+                        <!-- Check-In & Check-Out Times Row -->
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label asp-for="CheckInTime" class="form-label fw-semibold text-dark">
+                                    Check-In Time
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light"><i class="bi bi-box-arrow-in-right text-success"></i></span>
+                                    <input asp-for="CheckInTime" type="time" class="form-control" />
+                                </div>
+                                <span asp-validation-for="CheckInTime" class="text-danger fs-8"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="CheckOutTime" class="form-label fw-semibold text-dark">
+                                    Check-Out Time
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light"><i class="bi bi-box-arrow-right text-danger"></i></span>
+                                    <input asp-for="CheckOutTime" type="time" class="form-control" />
+                                </div>
+                                <span asp-validation-for="CheckOutTime" class="text-danger fs-8"></span>
+                            </div>
+                        </div>
+
+                        <!-- Remarks -->
+                        <div class="mb-4">
+                            <label asp-for="Remarks" class="form-label fw-semibold text-dark">
+                                Remarks / Notes
+                            </label>
+                            <textarea asp-for="Remarks" class="form-control" rows="3" placeholder="Add shift notes, delay justifications, or leave reason..."></textarea>
+                            <span asp-validation-for="Remarks" class="text-danger fs-8"></span>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="d-flex justify-content-end gap-2 pt-2 border-top">
+                            <a asp-action="Index" class="btn btn-light rounded-pill px-4">Cancel</a>
+                            <button type="submit" class="btn btn-indigo text-white rounded-pill px-5 shadow-sm" style="background-color: #4338ca;">
+                                <i class="bi bi-check-circle-fill me-1"></i> Submit Attendance
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
