@@ -165,6 +165,11 @@
                                     </a>
                                 </li>
                                 <li>
+                                    <a class="dropdown-item py-2" asp-controller="MachineIssue" asp-action="Index">
+                                        <i class="bi bi-exclamation-triangle-fill me-2 text-warning"></i> Machine Issues
+                                    </a>
+                                </li>
+                                <li>
                                     <a class="dropdown-item py-2" asp-controller="MaintenanceRequest" asp-action="Index">
                                         <i class="bi bi-tools me-2 text-danger"></i> Maintenance Requests
                                     </a>
@@ -172,6 +177,16 @@
                                 <li>
                                     <a class="dropdown-item py-2" asp-controller="OperatorAssignment" asp-action="Index">
                                         <i class="bi bi-person-badge-fill me-2 text-indigo" style="color: #6366f1;"></i> Operator Assignments
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item py-2" asp-controller="ProductionQuantityUpdate" asp-action="Index">
+                                        <i class="bi bi-bar-chart-line-fill me-2 text-info"></i> Production Quantity Updates
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item py-2" asp-controller="ProductionWorkStatus" asp-action="Index">
+                                        <i class="bi bi-activity me-2 text-warning"></i> Production Work Status
                                     </a>
                                 </li>
                                 <li>
@@ -704,6 +719,26 @@
                                     <i class="bi bi-clock-history text-info"></i> Machine Availability Logs
                                 </a>
                             </li>
+                            <li>
+                                <a class="sidebar-link @(currentController == "ProductionQuantityUpdate" && currentAction == "Index" ? "active" : "")" asp-controller="ProductionQuantityUpdate" asp-action="Index">
+                                    <i class="bi bi-bar-chart-line-fill text-info"></i> Production Quantity Updates
+                                </a>
+                            </li>
+                            <li>
+                                <a class="sidebar-link @(currentController == "ProductionQuantityUpdate" && currentAction == "Create" ? "active" : "")" asp-controller="ProductionQuantityUpdate" asp-action="Create">
+                                    <i class="bi bi-plus-circle-fill text-success"></i> Log Quantity Update
+                                </a>
+                            </li>
+                            <li>
+                                <a class="sidebar-link @(currentController == "ProductionWorkStatus" && currentAction == "Index" ? "active" : "")" asp-controller="ProductionWorkStatus" asp-action="Index">
+                                    <i class="bi bi-activity text-warning"></i> Production Work Status
+                                </a>
+                            </li>
+                            <li>
+                                <a class="sidebar-link @(currentController == "ProductionWorkStatus" && currentAction == "Create" ? "active" : "")" asp-controller="ProductionWorkStatus" asp-action="Create">
+                                    <i class="bi bi-plus-circle-fill text-success"></i> Log Work Status
+                                </a>
+                            </li>
                         </ul>
 
                         <div class="sidebar-section-title mt-3">Maintenance & Repairs</div>
@@ -716,6 +751,16 @@
                             <li>
                                 <a class="sidebar-link @(currentController == "MaintenanceRequest" && currentAction == "Create" ? "active" : "")" asp-controller="MaintenanceRequest" asp-action="Create">
                                     <i class="bi bi-plus-circle-fill text-success"></i> Log Maintenance
+                                </a>
+                            </li>
+                            <li>
+                                <a class="sidebar-link @(currentController == "MachineIssue" && currentAction == "Index" ? "active" : "")" asp-controller="MachineIssue" asp-action="Index">
+                                    <i class="bi bi-exclamation-triangle-fill text-warning"></i> Machine Issues
+                                </a>
+                            </li>
+                            <li>
+                                <a class="sidebar-link @(currentController == "MachineIssue" && currentAction == "Create" ? "active" : "")" asp-controller="MachineIssue" asp-action="Create">
+                                    <i class="bi bi-plus-circle-fill text-success"></i> Report Machine Issue
                                 </a>
                             </li>
                         </ul>
@@ -952,6 +997,11 @@
                             <li>
                                 <a class="sidebar-link @(currentController == "MaintenanceRequest" && currentAction == "Index" ? "active" : "")" asp-controller="MaintenanceRequest" asp-action="Index">
                                     <i class="bi bi-tools text-danger"></i> Maintenance Requests
+                                </a>
+                            </li>
+                            <li>
+                                <a class="sidebar-link @(currentController == "MachineIssue" && currentAction == "Index" ? "active" : "")" asp-controller="MachineIssue" asp-action="Index">
+                                    <i class="bi bi-exclamation-triangle-fill text-warning"></i> Machine Issues
                                 </a>
                             </li>
                         </ul>

@@ -1,0 +1,213 @@
+@model Manufacturing.Models.ProductionQuantityUpdate
+
+@{
+    ViewData["Title"] = "Log Production Quantity Update - Machine Manager Portal";
+
+    var orderList = ViewBag.OrderList as IEnumerable<SelectListItem> ?? new List<SelectListItem>();
+    var machineList = ViewBag.MachineList as IEnumerable<SelectListItem> ?? new List<SelectListItem>();
+    var employeeList = ViewBag.EmployeeList as IEnumerable<SelectListItem> ?? new List<SelectListItem>();
+}
+
+<div class="container-fluid px-3 py-3">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 p-4 rounded-4 shadow-sm text-white" style="background: linear-gradient(135deg, #0f172a 0%, #0e7490 50%, #0284c7 100%);">
+        <div class="mb-3 mb-md-0">
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="badge bg-info text-dark px-3 py-1 rounded-pill text-uppercase fs-7 fw-bold">Machine Manager Portal</span>
+                <span class="badge bg-outline-light text-white-50 border border-white-50 px-2 py-1 rounded-pill fs-7">New Production Record</span>
+            </div>
+            <h2 class="fw-bold mb-1 d-flex align-items-center">
+                <i class="bi bi-plus-circle-fill text-info me-2 fs-2"></i> Log Production Quantity Update
+            </h2>
+            <p class="text-slate-300 mb-0 opacity-75">Record units produced, target planned quantities, defect rejections, and equipment log entries.</p>
+        </div>
+        <div>
+            <a asp-action="Index" class="btn btn-outline-light rounded-pill px-4 py-2 fw-semibold">
+                <i class="bi bi-arrow-left me-1"></i> Back to Ledger
+            </a>
+        </div>
+    </div>
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-9 col-xl-8">
+            <div class="card border-0 shadow-sm rounded-4 bg-white">
+                <div class="card-header bg-transparent border-0 p-4 pb-0">
+                    <h5 class="fw-bold text-dark mb-0 d-flex align-items-center">
+                        <i class="bi bi-clipboard-data text-info me-2"></i> Production Entry Form
+                    </h5>
+                    <p class="text-muted small mb-0">Fill out machine output metrics, operator assignments, and order parameters</p>
+                </div>
+
+                <div class="card-body p-4">
+                    <form asp-action="Create" method="post" id="pquForm">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger rounded-3 mb-4"></div>
+
+                        <div class="row g-3">
+                            <div class="col-12 col-md-6">
+                                <label asp-for="ProductionOrderId" class="form-label fw-semibold">Production Order <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-end-0 rounded-start-3">
+                                        <i class="bi bi-hash text-muted"></i>
+                                    </span>
+                                    <select asp-for="ProductionOrderId" asp-items="orderList" class="form-select border-start-0 rounded-end-3" required>
+                                        <option value="">-- Select Production Order --</option>
+                                    </select>
+                                </div>
+                                <span asp-validation-for="ProductionOrderId" class="text-danger small"></span>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <label asp-for="MachineId" class="form-label fw-semibold">Machine / Equipment <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-end-0 rounded-start-3">
+                                        <i class="bi bi-cpu-fill text-muted"></i>
+                                    </span>
+                                    <select asp-for="MachineId" asp-items="machineList" class="form-select border-start-0 rounded-end-3" required>
+                                        <option value="">-- Select Machine --</option>
+                                    </select>
+                                </div>
+                                <span asp-validation-for="MachineId" class="text-danger small"></span>
+                            </div>
+
+                            <!-- Operator / Employee Select -->
+                            <div class="col-12 col-md-6">
+                                <label asp-for="EmployeeId" class="form-label fw-semibold">Operator / Staff <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-end-0 rounded-start-3">
+                                        <i class="bi bi-person-fill text-muted"></i>
+                                    </span>
+                                    <select asp-for="EmployeeId" asp-items="employeeList" class="form-select border-start-0 rounded-end-3" required>
+                                        <option value="">-- Select Operator / Employee --</option>
+                                    </select>
+                                </div>
+                                <span asp-validation-for="EmployeeId" class="text-danger small"></span>
+                            </div>
+
+                            <!-- Update Date -->
+                            <div class="col-12 col-md-6">
+                                <label asp-for="UpdateDate" class="form-label fw-semibold">Update Log Date <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-end-0 rounded-start-3">
+                                        <i class="bi bi-calendar3 text-muted"></i>
+                                    </span>
+                                    <input asp-for="UpdateDate" type="date" class="form-control border-start-0 rounded-end-3" value="@(Model?.UpdateDate != DateTime.MinValue ? Model?.UpdateDate.ToString("yyyy-MM-dd") : DateTime.Today.ToString("yyyy-MM-dd"))" required />
+                                </div>
+                                <span asp-validation-for="UpdateDate" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-12"><hr class="my-2 text-muted opacity-25" /></div>
+
+                            <!-- Planned Quantity -->
+                            <div class="col-12 col-md-4">
+                                <label asp-for="PlannedQuantity" class="form-label fw-semibold">Planned Quantity <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-end-0 rounded-start-3">
+                                        <i class="bi bi-bullseye text-primary"></i>
+                                    </span>
+                                    <input asp-for="PlannedQuantity" type="number" min="0" class="form-control border-start-0 rounded-end-3" id="PlannedQuantity" placeholder="e.g. 1000" required />
+                                </div>
+                                <span asp-validation-for="PlannedQuantity" class="text-danger small"></span>
+                            </div>
+
+                            <!-- Produced Quantity -->
+                            <div class="col-12 col-md-4">
+                                <label asp-for="ProducedQuantity" class="form-label fw-semibold">Produced Quantity <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-end-0 rounded-start-3">
+                                        <i class="bi bi-check2-circle text-success"></i>
+                                    </span>
+                                    <input asp-for="ProducedQuantity" type="number" min="0" class="form-control border-start-0 rounded-end-3" id="ProducedQuantity" placeholder="e.g. 850" required />
+                                </div>
+                                <span asp-validation-for="ProducedQuantity" class="text-danger small"></span>
+                            </div>
+
+                            <!-- Rejected Quantity -->
+                            <div class="col-12 col-md-4">
+                                <label asp-for="RejectedQuantity" class="form-label fw-semibold">Rejected Quantity</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-end-0 rounded-start-3">
+                                        <i class="bi bi-x-circle text-danger"></i>
+                                    </span>
+                                    <input asp-for="RejectedQuantity" type="number" min="0" class="form-control border-start-0 rounded-end-3" id="RejectedQuantity" placeholder="e.g. 25" value="0" />
+                                </div>
+                                <span asp-validation-for="RejectedQuantity" class="text-danger small"></span>
+                            </div>
+
+                            <!-- Auto-Calculated Remaining Quantity Live Card -->
+                            <div class="col-12">
+                                <div class="card border-0 bg-light p-3 rounded-3 my-2">
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <div>
+                                            <span class="text-uppercase text-muted fw-bold fs-8">Calculated Remaining Units</span>
+                                            <div class="fs-4 fw-bold text-dark" id="remainingQuantityDisplay">0 units</div>
+                                            <small class="text-muted" id="remainingCalcFormula">Formula: Planned (0) - Produced (0) - Rejected (0)</small>
+                                        </div>
+                                        <div>
+                                            <span class="badge bg-info-subtle text-info border border-info-subtle px-3 py-2 rounded-pill fs-7 fw-semibold" id="completionStatusBadge">
+                                                Pending Calculation
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Remarks -->
+                            <div class="col-12">
+                                <label asp-for="Remarks" class="form-label fw-semibold">Machine Remarks / Notes</label>
+                                <textarea asp-for="Remarks" class="form-control rounded-3" rows="3" placeholder="Log shift notes, downtime reasons, material batch numbers, or quality remarks..."></textarea>
+                                <span asp-validation-for="Remarks" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-12 mt-4 text-end">
+                                <a asp-action="Index" class="btn btn-light rounded-pill px-4 me-2">Cancel</a>
+                                <button type="submit" class="btn btn-info text-white rounded-pill px-5 fw-semibold shadow-sm">
+                                    <i class="bi bi-check-circle-fill me-1"></i> Save Quantity Update
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var plannedInput = document.getElementById('PlannedQuantity');
+            var producedInput = document.getElementById('ProducedQuantity');
+            var rejectedInput = document.getElementById('RejectedQuantity');
+
+            var display = document.getElementById('remainingQuantityDisplay');
+            var formula = document.getElementById('remainingCalcFormula');
+            var badge = document.getElementById('completionStatusBadge');
+
+            function updateRemaining() {
+                var planned = parseInt(plannedInput.value) || 0;
+                var produced = parseInt(producedInput.value) || 0;
+                var rejected = parseInt(rejectedInput.value) || 0;
+
+                var remaining = planned - produced - rejected;
+
+                display.textContent = remaining + ' units';
+                formula.textContent = 'Formula: Planned (' + planned + ') - Produced (' + produced + ') - Rejected (' + rejected + ')';
+
+                if (planned > 0 && remaining <= 0) {
+                    badge.className = 'badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill fs-7 fw-semibold';
+                    badge.textContent = 'Target Fulfilled / Completed';
+                } else if (remaining > 0) {
+                    badge.className = 'badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-3 py-2 rounded-pill fs-7 fw-semibold';
+                    badge.textContent = remaining + ' Units Remaining';
+                } else {
+                    badge.className = 'badge bg-info-subtle text-info border border-info-subtle px-3 py-2 rounded-pill fs-7 fw-semibold';
+                    badge.textContent = 'In Progress';
+                }
+            }
+
+            plannedInput.addEventListener('input', updateRemaining);
+            producedInput.addEventListener('input', updateRemaining);
+            rejectedInput.addEventListener('input', updateRemaining);
+
+            updateRemaining();
+        });
+    </script>
+}

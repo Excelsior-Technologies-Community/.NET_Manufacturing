@@ -2,10 +2,10 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Manufacturing.Models
 {
-    public class ProductionWorkStatus
+    public class ProductionQuantityUpdate
     {
         [Key]
-        public int WorkStatusId { get; set; }
+        public int QuantityUpdateId { get; set; }
 
         [Required]
         public int ProductionOrderId { get; set; }
@@ -16,23 +16,19 @@ namespace Manufacturing.Models
         [Required]
         public int EmployeeId { get; set; }
 
-        public DateTime? StartDate { get; set; }
+        [Required]
+        public DateTime UpdateDate { get; set; }
 
-        public TimeSpan? StartTime { get; set; }
+        [Required]
+        public int PlannedQuantity { get; set; }
 
-        public DateTime? PauseDate { get; set; }
+        [Required]
+        public int ProducedQuantity { get; set; }
 
-        public TimeSpan? PauseTime { get; set; }
+        public int RejectedQuantity { get; set; }
 
-        public DateTime? ResumeDate { get; set; }
-
-        public TimeSpan? ResumeTime { get; set; }
-
-        public DateTime? CompletionDate { get; set; }
-
-        public TimeSpan? CompletionTime { get; set; }
-
-        public string? Status { get; set; }
+        [Required]
+        public int RemainingQuantity { get; set; }
 
         public string? Remarks { get; set; }
 

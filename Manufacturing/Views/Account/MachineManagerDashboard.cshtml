@@ -50,6 +50,15 @@
                         <a asp-controller="MachineAvailability" asp-action="Create" class="btn btn-outline-light rounded-pill px-3 py-2 shadow-sm">
                             <i class="bi bi-clock-history me-1"></i> Log Availability
                         </a>
+                        <a asp-controller="MachineIssue" asp-action="Create" class="btn btn-outline-light rounded-pill px-3 py-2 shadow-sm">
+                            <i class="bi bi-exclamation-triangle-fill me-1 text-warning"></i> Report Machine Issue
+                        </a>
+                        <a asp-controller="ProductionQuantityUpdate" asp-action="Create" class="btn btn-outline-light rounded-pill px-3 py-2 shadow-sm">
+                            <i class="bi bi-bar-chart-line-fill me-1"></i> Update Quantity
+                        </a>
+                        <a asp-controller="ProductionWorkStatus" asp-action="Create" class="btn btn-outline-light rounded-pill px-3 py-2 shadow-sm">
+                            <i class="bi bi-activity me-1"></i> Log Work Status
+                        </a>
                     </div>
                 </div>
             </div>
@@ -155,7 +164,7 @@
 
     <!-- Quick Navigation Bar -->
     <div class="row g-3 mb-4">
-        <div class="col-md-3 col-sm-6">
+        <div class="col-lg col-md-4 col-sm-6">
             <a asp-controller="Machine" asp-action="Index" class="card border-0 shadow-sm rounded-4 text-decoration-none text-dark bg-white hover-shadow transition p-3">
                 <div class="d-flex align-items-center">
                     <div class="p-3 bg-info bg-opacity-10 text-info rounded-3 me-3">
@@ -168,7 +177,7 @@
                 </div>
             </a>
         </div>
-        <div class="col-md-3 col-sm-6">
+        <div class="col-lg col-md-4 col-sm-6">
             <a asp-controller="MachineAssignment" asp-action="Index" class="card border-0 shadow-sm rounded-4 text-decoration-none text-dark bg-white hover-shadow transition p-3">
                 <div class="d-flex align-items-center">
                     <div class="p-3 bg-primary bg-opacity-10 text-primary rounded-3 me-3">
@@ -181,7 +190,7 @@
                 </div>
             </a>
         </div>
-        <div class="col-md-3 col-sm-6">
+        <div class="col-lg col-md-4 col-sm-6">
             <a asp-controller="MaintenanceRequest" asp-action="Index" class="card border-0 shadow-sm rounded-4 text-decoration-none text-dark bg-white hover-shadow transition p-3">
                 <div class="d-flex align-items-center">
                     <div class="p-3 bg-danger bg-opacity-10 text-danger rounded-3 me-3">
@@ -194,7 +203,7 @@
                 </div>
             </a>
         </div>
-        <div class="col-md-3 col-sm-6">
+        <div class="col-lg col-md-4 col-sm-6">
             <a asp-controller="MachineAvailability" asp-action="Index" class="card border-0 shadow-sm rounded-4 text-decoration-none text-dark bg-white hover-shadow transition p-3">
                 <div class="d-flex align-items-center">
                     <div class="p-3 bg-success bg-opacity-10 text-success rounded-3 me-3">
@@ -203,6 +212,45 @@
                     <div>
                         <h6 class="fw-bold mb-0">Machine Availability</h6>
                         <small class="text-muted">Uptime & Status logs</small>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-lg col-md-4 col-sm-6">
+            <a asp-controller="ProductionQuantityUpdate" asp-action="Index" class="card border-0 shadow-sm rounded-4 text-decoration-none text-dark bg-white hover-shadow transition p-3">
+                <div class="d-flex align-items-center">
+                    <div class="p-3 bg-cyan bg-opacity-10 text-info rounded-3 me-3" style="background-color: rgba(6, 182, 212, 0.1);">
+                        <i class="bi bi-bar-chart-line-fill fs-3 text-info"></i>
+                    </div>
+                    <div>
+                        <h6 class="fw-bold mb-0">Quantity Updates</h6>
+                        <small class="text-muted">Production output logs</small>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-lg col-md-4 col-sm-6">
+            <a asp-controller="ProductionWorkStatus" asp-action="Index" class="card border-0 shadow-sm rounded-4 text-decoration-none text-dark bg-white hover-shadow transition p-3">
+                <div class="d-flex align-items-center">
+                    <div class="p-3 bg-warning bg-opacity-10 text-warning rounded-3 me-3">
+                        <i class="bi bi-activity fs-3"></i>
+                    </div>
+                    <div>
+                        <h6 class="fw-bold mb-0">Work Status</h6>
+                        <small class="text-muted">Job progress & status</small>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-lg col-md-4 col-sm-6">
+            <a asp-controller="MachineIssue" asp-action="Index" class="card border-0 shadow-sm rounded-4 text-decoration-none text-dark bg-white hover-shadow transition p-3">
+                <div class="d-flex align-items-center">
+                    <div class="p-3 bg-danger bg-opacity-10 text-danger rounded-3 me-3">
+                        <i class="bi bi-exclamation-triangle-fill fs-3"></i>
+                    </div>
+                    <div>
+                        <h6 class="fw-bold mb-0">Machine Issues</h6>
+                        <small class="text-muted">Breakdown & fault logs</small>
                     </div>
                 </div>
             </a>

@@ -1,0 +1,178 @@
+@model Manufacturing.Models.ProductionWorkStatus
+
+@{
+    ViewData["Title"] = "Edit Production Work Status";
+    var orderList = ViewBag.OrderList as List<SelectListItem> ?? new List<SelectListItem>();
+    var machineList = ViewBag.MachineList as List<SelectListItem> ?? new List<SelectListItem>();
+    var employeeList = ViewBag.EmployeeList as List<SelectListItem> ?? new List<SelectListItem>();
+}
+
+<div class="row justify-content-center mt-4 mb-5">
+    <div class="col-md-10 col-lg-9">
+        <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
+            <div class="card-header text-white text-center py-4" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);">
+                <h3 class="fw-bold mb-1"><i class="bi bi-pencil-square me-2 text-warning"></i>Edit Work Status Entry</h3>
+                <p class="mb-0 text-white-50 fs-6">Update production order status, assigned machine, operator, and event timestamps</p>
+            </div>
+            <div class="card-body p-4 p-md-5">
+                <form asp-action="Edit" method="post">
+                    <input type="hidden" asp-for="WorkStatusId" />
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger rounded-3" role="alert"></div>
+
+                    <!-- Dropdowns Row -->
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label asp-for="ProductionOrderId" class="form-label fw-semibold">Production Order <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light text-muted"><i class="bi bi-hash"></i></span>
+                                <select asp-for="ProductionOrderId" asp-items="orderList" class="form-select form-select-lg" required>
+                                    <option value="">-- Select Production Order --</option>
+                                </select>
+                            </div>
+                            <span asp-validation-for="ProductionOrderId" class="text-danger fs-7"></span>
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <label asp-for="MachineId" class="form-label fw-semibold">Machine <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light text-muted"><i class="bi bi-cpu"></i></span>
+                                <select asp-for="MachineId" asp-items="machineList" class="form-select form-select-lg" required>
+                                    <option value="">-- Select Machine --</option>
+                                </select>
+                            </div>
+                            <span asp-validation-for="MachineId" class="text-danger fs-7"></span>
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <label asp-for="EmployeeId" class="form-label fw-semibold">Operator / Employee <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light text-muted"><i class="bi bi-person-badge"></i></span>
+                                <select asp-for="EmployeeId" asp-items="employeeList" class="form-select form-select-lg" required>
+                                    <option value="">-- Select Employee --</option>
+                                </select>
+                            </div>
+                            <span asp-validation-for="EmployeeId" class="text-danger fs-7"></span>
+                        </div>
+                    </div>
+
+                    <!-- Start & Pause Timeline -->
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <label asp-for="StartDate" class="form-label fw-semibold">Start Date</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light text-muted"><i class="bi bi-calendar-event"></i></span>
+                                <input asp-for="StartDate" type="date" asp-format="{0:yyyy-MM-dd}" class="form-control" />
+                            </div>
+                            <span asp-validation-for="StartDate" class="text-danger fs-7"></span>
+                        </div>
+
+                        <div class="col-md-3 mb-3">
+                            <label asp-for="StartTime" class="form-label fw-semibold">Start Time</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light text-muted"><i class="bi bi-clock"></i></span>
+                                <input asp-for="StartTime" type="time" class="form-control" />
+                            </div>
+                            <span asp-validation-for="StartTime" class="text-danger fs-7"></span>
+                        </div>
+
+                        <div class="col-md-3 mb-3">
+                            <label asp-for="PauseDate" class="form-label fw-semibold">Pause Date</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light text-muted"><i class="bi bi-calendar-minus"></i></span>
+                                <input asp-for="PauseDate" type="date" asp-format="{0:yyyy-MM-dd}" class="form-control" />
+                            </div>
+                            <span asp-validation-for="PauseDate" class="text-danger fs-7"></span>
+                        </div>
+
+                        <div class="col-md-3 mb-3">
+                            <label asp-for="PauseTime" class="form-label fw-semibold">Pause Time</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light text-muted"><i class="bi bi-pause-circle"></i></span>
+                                <input asp-for="PauseTime" type="time" class="form-control" />
+                            </div>
+                            <span asp-validation-for="PauseTime" class="text-danger fs-7"></span>
+                        </div>
+                    </div>
+
+                    <!-- Resume & Completion Timeline -->
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <label asp-for="ResumeDate" class="form-label fw-semibold">Resume Date</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light text-muted"><i class="bi bi-calendar-plus"></i></span>
+                                <input asp-for="ResumeDate" type="date" asp-format="{0:yyyy-MM-dd}" class="form-control" />
+                            </div>
+                            <span asp-validation-for="ResumeDate" class="text-danger fs-7"></span>
+                        </div>
+
+                        <div class="col-md-3 mb-3">
+                            <label asp-for="ResumeTime" class="form-label fw-semibold">Resume Time</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light text-muted"><i class="bi bi-play-circle"></i></span>
+                                <input asp-for="ResumeTime" type="time" class="form-control" />
+                            </div>
+                            <span asp-validation-for="ResumeTime" class="text-danger fs-7"></span>
+                        </div>
+
+                        <div class="col-md-3 mb-3">
+                            <label asp-for="CompletionDate" class="form-label fw-semibold">Completion Date</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light text-muted"><i class="bi bi-calendar-check"></i></span>
+                                <input asp-for="CompletionDate" type="date" asp-format="{0:yyyy-MM-dd}" class="form-control" />
+                            </div>
+                            <span asp-validation-for="CompletionDate" class="text-danger fs-7"></span>
+                        </div>
+
+                        <div class="col-md-3 mb-3">
+                            <label asp-for="CompletionTime" class="form-label fw-semibold">Completion Time</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light text-muted"><i class="bi bi-check-circle"></i></span>
+                                <input asp-for="CompletionTime" type="time" class="form-control" />
+                            </div>
+                            <span asp-validation-for="CompletionTime" class="text-danger fs-7"></span>
+                        </div>
+                    </div>
+
+                    <!-- Status & Remarks -->
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label asp-for="Status" class="form-label fw-semibold">Status</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light text-muted"><i class="bi bi-activity"></i></span>
+                                <select asp-for="Status" class="form-select">
+                                    <option value="Assigned">Assigned</option>
+                                    <option value="Running">Running</option>
+                                    <option value="Paused">Paused</option>
+                                    <option value="Completed">Completed</option>
+                                </select>
+                            </div>
+                            <span asp-validation-for="Status" class="text-danger fs-7"></span>
+                        </div>
+
+                        <div class="col-md-8 mb-4">
+                            <label asp-for="Remarks" class="form-label fw-semibold">Remarks & Operations Log</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light text-muted"><i class="bi bi-file-text"></i></span>
+                                <textarea asp-for="Remarks" class="form-control" rows="2" placeholder="Enter optional shift notes, machine downtime reasons, or work observations..."></textarea>
+                            </div>
+                            <span asp-validation-for="Remarks" class="text-danger fs-7"></span>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+                        <a asp-action="Index" class="btn btn-outline-secondary btn-lg rounded-3 px-4">
+                            <i class="bi bi-arrow-left me-1"></i> Back to Roster
+                        </a>
+                        <button type="submit" class="btn btn-warning btn-lg rounded-3 px-5 fw-bold shadow-sm text-dark">
+                            <i class="bi bi-check-circle me-1"></i> Update Entry
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
